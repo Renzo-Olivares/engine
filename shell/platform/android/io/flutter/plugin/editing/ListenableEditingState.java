@@ -172,8 +172,73 @@ class ListenableEditingState extends SpannableStringBuilder {
   }
 
   @Override
+  public SpannableStringBuilder append(char text){
+    Log.e("diffs", "insert #1 is called");
+    return append(String.valueOf(text));
+  }
+
+  @Override
+  public SpannableStringBuilder append(CharSequence text, Object what, int flags){
+    Log.e("diffs", "append #2 is called");
+    return super.append(text, what, flags);
+  }
+
+  @Override
+  public SpannableStringBuilder append(CharSequence text, int start, int end){
+    Log.e("diffs", "append #3 is called");
+    return replace(text.length(), text.length(), text, start, end);
+  }
+
+  @Override
+  public SpannableStringBuilder append(CharSequence text){
+    Log.e("diffs", "append #4 is called");
+    return replace(text.length(), text.length(), text, 0, text.length());
+  }
+
+  @Override
+  public SpannableStringBuilder insert(int where, CharSequence tb){
+    Log.e("diffs", "insert #1 is called");
+    return replace(where, where, tb, 0, tb.length());
+  }
+
+  @Override
+  public SpannableStringBuilder insert(int where, CharSequence tb, int start, int end){
+    Log.e("diffs", "insert #2 is called");
+    return replace(where, where, tb, start, end);
+  }
+
+  @Override
+  public SpannableStringBuilder delete(int start, int end){
+    Log.e("diffs", "delete is called");
+    return replace(start, end, "", 0, 0);
+  }
+
+  @Override
   public SpannableStringBuilder replace(
       int start, int end, CharSequence tb, int tbstart, int tbend) {
+    if (tbstart == 0 && tbend == 0 && tb.equals("")) {
+      Log.e("diffs", "delete diff");
+    } else{
+      Log.e("diffs", "insert diff");
+    }
+    Log.e("diffs", "replace is called");
+    Log.e(
+      "diffs",
+      "replace call info: \n"
+          + "start: "
+          + start
+          + "\n"
+          + "end: "
+          + end
+          + "\n"
+          + "tb: "
+          + tb.toString()
+          + "\n"
+          + "tbstart: "
+          + tbstart
+          + "\n"
+          + "tbend: "
+          + tbend);
 
     if (mChangeNotificationDepth > 0) {
       Log.e(TAG, "editing state should not be changed in a listener callback");

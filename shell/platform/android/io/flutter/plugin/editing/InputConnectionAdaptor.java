@@ -90,6 +90,7 @@ class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private ExtractedText getExtractedText(ExtractedTextRequest request) {
+    Log.e("diffs", "getExtractedText");
     mExtractedText.startOffset = 0;
     mExtractedText.partialStartOffset = -1;
     mExtractedText.partialEndOffset = -1;
@@ -103,6 +104,7 @@ class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private CursorAnchorInfo getCursorAnchorInfo() {
+    Log.e("diffs", "getCursorAnchorInfo");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       return null;
     }
@@ -127,11 +129,13 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public Editable getEditable() {
+    Log.e("diffs", "getEditable");
     return mEditable;
   }
 
   @Override
   public boolean beginBatchEdit() {
+    Log.e("diffs", "beginBatchEdit");
     mEditable.beginBatchEdit();
     batchEditNestDepth += 1;
     return super.beginBatchEdit();
@@ -139,6 +143,7 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean endBatchEdit() {
+    Log.e("diffs", "endBatchEdit");
     boolean result = super.endBatchEdit();
     batchEditNestDepth -= 1;
     mEditable.endBatchEdit();
@@ -147,12 +152,14 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean commitText(CharSequence text, int newCursorPosition) {
+    Log.e("diffs", "commitText");
     final boolean result = super.commitText(text, newCursorPosition);
     return result;
   }
 
   @Override
   public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+    Log.e("diffs", "deleteSurroundingText");
     if (mEditable.getSelectionStart() == -1) {
       return true;
     }
@@ -163,18 +170,21 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+    Log.e("diffs", "deleteSurroundingTextInCodePoints");
     boolean result = super.deleteSurroundingTextInCodePoints(beforeLength, afterLength);
     return result;
   }
 
   @Override
   public boolean setComposingRegion(int start, int end) {
+    Log.e("diffs", "setComposingRegion");
     final boolean result = super.setComposingRegion(start, end);
     return result;
   }
 
   @Override
   public boolean setComposingText(CharSequence text, int newCursorPosition) {
+    Log.e("diffs", "setComposingText");
     boolean result;
     beginBatchEdit();
     if (text.length() == 0) {
@@ -188,6 +198,7 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean finishComposingText() {
+    Log.e("diffs", "finishComposingText");
     final boolean result = super.finishComposingText();
     return result;
   }
@@ -199,6 +210,7 @@ class InputConnectionAdaptor extends BaseInputConnection
   // TODO(garyq): Implement a more feature complete version of getExtractedText
   @Override
   public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
+    Log.e("diffs", "getExtractedText");
     final boolean textMonitor = (flags & GET_EXTRACTED_TEXT_MONITOR) != 0;
     if (textMonitor == (mExtractRequest == null)) {
       Log.d(TAG, "The input method toggled text monitoring " + (textMonitor ? "on" : "off"));
@@ -211,6 +223,7 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean requestCursorUpdates(int cursorUpdateMode) {
+    Log.e("diffs", "requestCursorUpdates");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       return false;
     }
@@ -230,12 +243,14 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean clearMetaKeyStates(int states) {
+    Log.e("diffs", "clearMetaKeyStates");
     boolean result = super.clearMetaKeyStates(states);
     return result;
   }
 
   @Override
   public void closeConnection() {
+    Log.e("diffs", "closeConnection");
     super.closeConnection();
     mEditable.removeEditingStateListener(this);
     for (; batchEditNestDepth > 0; batchEditNestDepth--) {
@@ -245,6 +260,7 @@ class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean setSelection(int start, int end) {
+    Log.e("diffs", "setSelection");
     beginBatchEdit();
     boolean result = super.setSelection(start, end);
     endBatchEdit();
@@ -254,6 +270,7 @@ class InputConnectionAdaptor extends BaseInputConnection
   // Sanitizes the index to ensure the index is within the range of the
   // contents of editable.
   private static int clampIndexToEditable(int index, Editable editable) {
+    Log.e("diffs", "clampIndexToEditable");
     int clamped = Math.max(0, Math.min(editable.length(), index));
     if (clamped != index) {
       Log.d(
@@ -272,10 +289,12 @@ class InputConnectionAdaptor extends BaseInputConnection
   // occur, and need a chance to be handled by the framework.
   @Override
   public boolean sendKeyEvent(KeyEvent event) {
+    Log.e("diffs", "sendKeyEvent");
     return keyboardManager.handleEvent(event);
   }
 
   public boolean handleKeyEvent(KeyEvent event) {
+    Log.e("diffs", "handleKeyEvent");
     if (event.getAction() == KeyEvent.ACTION_DOWN) {
       if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
         return handleHorizontalMovement(true, event.isShiftPressed());
@@ -297,6 +316,7 @@ class InputConnectionAdaptor extends BaseInputConnection
         final int selStart = Selection.getSelectionStart(mEditable);
         final int selEnd = Selection.getSelectionEnd(mEditable);
         final int character = event.getUnicodeChar();
+        Log.e("diffs", "handling key event " + String.valueOf((char) character));
         if (selStart < 0 || selEnd < 0 || character == 0) {
           return false;
         }
