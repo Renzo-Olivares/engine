@@ -202,13 +202,13 @@ class ListenableEditingState extends SpannableStringBuilder {
   }
 
   @Override
-  public SpannableStringBuilder insert(int where, CharSequence tb, int start, int end){
+  public SpannableStringBuilder insert(int where, CharSequence tb, int start, int end) {
     Log.e("diffs", "insert #2 is called");
     return replace(where, where, tb, start, end);
   }
 
   @Override
-  public SpannableStringBuilder delete(int start, int end){
+  public SpannableStringBuilder delete(int start, int end) {
     Log.e("diffs", "delete is called");
     return replace(start, end, "", 0, 0);
   }
