@@ -218,7 +218,7 @@ class ListenableEditingState extends SpannableStringBuilder {
       int start, int end, CharSequence tb, int tbstart, int tbend) {
     if (tbstart == 0 && tbend == 0 && tb.equals("")) {
       Log.e("diffs", "delete diff");
-    } else{
+    } else {
       Log.e("diffs", "insert diff");
     }
     Log.e("diffs", "replace is called");
