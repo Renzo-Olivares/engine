@@ -223,22 +223,22 @@ class ListenableEditingState extends SpannableStringBuilder {
     }
     Log.e("diffs", "replace is called");
     Log.e(
-      "diffs",
-      "replace call info: \n"
-          + "start: "
-          + start
-          + "\n"
-          + "end: "
-          + end
-          + "\n"
-          + "tb: "
-          + tb.toString()
-          + "\n"
-          + "tbstart: "
-          + tbstart
-          + "\n"
-          + "tbend: "
-          + tbend);
+        "diffs",
+        "replace call info: \n"
+            + "start: "
+            + start
+            + "\n"
+            + "end: "
+            + end
+            + "\n"
+            + "tb: "
+            + tb.toString()
+            + "\n"
+            + "tbstart: "
+            + tbstart
+            + "\n"
+            + "tbend: "
+            + tbend);
 
     if (mChangeNotificationDepth > 0) {
       Log.e(TAG, "editing state should not be changed in a listener callback");
