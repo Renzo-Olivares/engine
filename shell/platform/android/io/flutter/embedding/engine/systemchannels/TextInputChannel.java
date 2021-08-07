@@ -211,7 +211,6 @@ public class TextInputChannel {
             + "Composing end: "
             + composingEnd);
 
-
     Log.e(
         "DELTAS",
         "Sending message to update editing state: \n"
