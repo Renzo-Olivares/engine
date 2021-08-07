@@ -275,9 +275,9 @@ class ListenableEditingState extends SpannableStringBuilder {
     //           + " "
     //           + toString().subSequence(start, end).length()
     //           + " == "
-    //           + tb.subSequence(tbstart, end-start)
+    //           + tb.subSequence(tbstart, end - start)
     //           + " "
-    //           + tb.subSequence(tbstart, end-start).length()
+    //           + tb.subSequence(tbstart, end - start).length()
     //           + " = "
     //           + isOriginalComposingRegionTextChanged);
     // }
