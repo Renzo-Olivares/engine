@@ -241,11 +241,11 @@ class ListenableEditingState extends SpannableStringBuilder {
     // one, but changes more than one character.
     final boolean isOriginalComposingRegionTextChanged =
         (isCalledFromDelete
-              || isDeletingInsideComposingRegion
-              || previousComposingReplacedByShorter)
+                || isDeletingInsideComposingRegion
+                || previousComposingReplacedByShorter)
             || !toString()
-            .subSequence(start, end)
-            .equals(tb.toString().subSequence(tbstart, end-start));
+                .subSequence(start, end)
+                .equals(tb.toString().subSequence(tbstart, end-start));
 
     final boolean isInsertionGreaterThanOne = tbend - (end - start) > 1;
     final boolean isInsertionAtLeastOne = tbend - (end - start) > 0;
@@ -305,8 +305,8 @@ class ListenableEditingState extends SpannableStringBuilder {
               + " to "
               + end);
     } else if ((previousComposingReplacedByShorter
-        || previousComposingReplacedByLonger
-        || previousComposingReplacedBySame)
+            || previousComposingReplacedByLonger
+            || previousComposingReplacedBySame)
         && !(insertingOutsideComposingRegion || insertingInsideComposingRegion)) { // Replacement.
       Log.e("DELTAS", "There has been a replacement");
       if (previousComposingReplacedByShorter) {
