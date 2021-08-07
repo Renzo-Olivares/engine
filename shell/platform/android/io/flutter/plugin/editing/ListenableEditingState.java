@@ -245,7 +245,7 @@ class ListenableEditingState extends SpannableStringBuilder {
                 || previousComposingReplacedByShorter)
             || !toString()
                 .subSequence(start, end)
-                .equals(tb.toString().subSequence(tbstart, end-start));
+                .equals(tb.toString().subSequence(tbstart, end - start));
 
     final boolean isInsertionGreaterThanOne = tbend - (end - start) > 1;
     final boolean isInsertionAtLeastOne = tbend - (end - start) > 0;
