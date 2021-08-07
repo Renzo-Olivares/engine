@@ -211,6 +211,25 @@ public class TextInputChannel {
             + "Composing end: "
             + composingEnd);
 
+
+    Log.e(
+      "DELTAS",
+      "Sending message to update editing state: \n"
+          + "Text: "
+          + text
+          + "\n"
+          + "Selection start: "
+          + selectionStart
+          + "\n"
+          + "Selection end: "
+          + selectionEnd
+          + "\n"
+          + "Composing start: "
+          + composingStart
+          + "\n"
+          + "Composing end: "
+          + composingEnd);
+
     final HashMap<Object, Object> state =
         createEditingStateJSON(text, selectionStart, selectionEnd, composingStart, composingEnd);
 
