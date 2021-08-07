@@ -922,7 +922,8 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   NSInteger tbstart = 0;
   NSInteger tbend = text.length;
 
-  NSLog(@"replaceRangeLocal range start: %lu to end: %lu character: %@ tbstart: %lu tbend: %lu", start, end, text, tbstart, tbend);
+  NSLog(@"replaceRangeLocal range start: %lu to end: %lu character: %@ tbstart: %lu tbend: %lu",
+        start, end, text, tbstart, tbend);
   NSLog(@"Word being edited (before edits): %@", self.text);
 
   BOOL isDeletingByReplacingWithEmpty = text.length == 0 && tbstart == 0 && tbstart == tbend;
@@ -931,17 +932,18 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   BOOL isReplacedBySame = tbend - tbstart == end - start;
   BOOL isReplaced = isReplacedByLonger || isReplacedByShorter || isReplacedBySame;
 
-  if (isDeletingByReplacingWithEmpty) { // Deletion.
-    NSString *deleted = [self.text substringWithRange: range];
+  if (isDeletingByReplacingWithEmpty) {  // Deletion.
+    NSString* deleted = [self.text substringWithRange: range];
     NSLog(@"We have a deletion");
     NSLog(@"We are deletion %@ at start position: %lu and end position: %lu", deleted, start, end);
-  } else if (start == end) { // Insertion.
+  } else if (start == end) {  // Insertion.
     NSLog(@"We have an insertion");
     NSLog(@"We are inserting %@ at start position: %lu and end position: %lu", text, start, end);
-  } else if (isReplaced) { // Replacement.
-    NSString *replaced = [self.text substringWithRange: range];
+  } else if (isReplaced) {  // Replacement.
+    NSString* replaced = [self.text substringWithRange: range];
     NSLog(@"We have a replacement");
-    NSLog(@"We are replacing %@ at start position: %lu and end position: %lu with %@", replaced, start, end, text);
+    NSLog(@"We are replacing %@ at start position: %lu and end position: %lu with %@", replaced,
+          start, end, text);
   }
 
   NSRange selectedRange = _selectedTextRange.range;
