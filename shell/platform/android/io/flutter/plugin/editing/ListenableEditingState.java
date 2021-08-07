@@ -241,9 +241,11 @@ class ListenableEditingState extends SpannableStringBuilder {
     // one, but changes more than one character.
     final boolean isOriginalComposingRegionTextChanged =
         (isCalledFromDelete
-            || isDeletingInsideComposingRegion
-            || previousComposingReplacedByShorter)
-            || !toString().subSequence(start, end).equals(tb.toString().subSequence(tbstart, end-start));
+              || isDeletingInsideComposingRegion
+              || previousComposingReplacedByShorter)
+            || !toString()
+            .subSequence(start, end)
+            .equals(tb.toString().subSequence(tbstart, end-start));
 
     final boolean isInsertionGreaterThanOne = tbend - (end - start) > 1;
     final boolean isInsertionAtLeastOne = tbend - (end - start) > 0;
@@ -255,8 +257,8 @@ class ListenableEditingState extends SpannableStringBuilder {
     // Your finishing the word by appending new content
     // Your finishing the word by correcting previous content and appending new content
 
-    final boolean previousComposingReplacedByLonger = end - start < tbend - tbstart
-        && isInsertionAtLeastOneAndComposingTextChanged;
+    final boolean previousComposingReplacedByLonger =
+        end - start < tbend - tbstart && isInsertionAtLeastOneAndComposingTextChanged;
     final boolean previousComposingReplacedBySame = end - start == tbend - tbstart;
     // Log.e("DELTAS", "edited word " + toString());
     // if (isCalledFromDelete || isDeletingInsideComposingRegion
@@ -281,8 +283,11 @@ class ListenableEditingState extends SpannableStringBuilder {
     // }
 
     final boolean insertingOutsideComposingRegion = start == end;
-    final boolean insertingInsideComposingRegion = !insertingOutsideComposingRegion
-        && !isOriginalComposingRegionTextChanged && isInsertionAtLeastOne && start + tbend > end;
+    final boolean insertingInsideComposingRegion =
+        !insertingOutsideComposingRegion
+            && !isOriginalComposingRegionTextChanged
+            && isInsertionAtLeastOne
+            && start + tbend > end;
 
     if (isCalledFromDelete || isDeletingInsideComposingRegion) { // Deletion.
       Log.e("DELTAS", "There has been a deletion");
@@ -296,12 +301,13 @@ class ListenableEditingState extends SpannableStringBuilder {
           "character : "
               + toString().subSequence(start + tbend, end)
               + " was removed at position: "
-              + (start  + tbend)
+              + (start + tbend)
               + " to "
               + end);
-    } else if ((previousComposingReplacedByShorter || previousComposingReplacedByLonger
-        || previousComposingReplacedBySame) && !(insertingOutsideComposingRegion
-        || insertingInsideComposingRegion)) { // Replacement.
+    } else if ((previousComposingReplacedByShorter
+        || previousComposingReplacedByLonger
+        || previousComposingReplacedBySame)
+        && !(insertingOutsideComposingRegion || insertingInsideComposingRegion)) { // Replacement.
       Log.e("DELTAS", "There has been a replacement");
       if (previousComposingReplacedByShorter) {
         // When auto correct replaces with a correction of shorter length. Is this case possible?
