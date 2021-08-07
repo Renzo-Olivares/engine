@@ -933,14 +933,14 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   BOOL isReplaced = isReplacedByLonger || isReplacedByShorter || isReplacedBySame;
 
   if (isDeletingByReplacingWithEmpty) {  // Deletion.
-    NSString* deleted = [self.text substringWithRange: range];
+    NSString* deleted = [self.text substringWithRange:range];
     NSLog(@"We have a deletion");
     NSLog(@"We are deletion %@ at start position: %lu and end position: %lu", deleted, start, end);
   } else if (start == end) {  // Insertion.
     NSLog(@"We have an insertion");
     NSLog(@"We are inserting %@ at start position: %lu and end position: %lu", text, start, end);
   } else if (isReplaced) {  // Replacement.
-    NSString* replaced = [self.text substringWithRange: range];
+    NSString* replaced = [self.text substringWithRange:range];
     NSLog(@"We have a replacement");
     NSLog(@"We are replacing %@ at start position: %lu and end position: %lu with %@", replaced,
           start, end, text);
