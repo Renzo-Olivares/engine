@@ -7,7 +7,6 @@ package io.flutter.plugin.editing;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.BaseInputConnection;
 import io.flutter.Log;
@@ -223,37 +222,65 @@ class ListenableEditingState extends SpannableStringBuilder {
       Log.e(TAG, "editing state should not be changed in a listener callback");
     }
 
-    Log.e("DELTAS", "replace(" + start + ", " + end + ", " + tb + ", " + tbstart + ", " + tbend + ")");
+    Log.e(
+        "DELTAS",
+        "replace(" + start + ", " + end + ", " + tb + ", " + tbstart + ", " + tbend + ")");
 
-    final boolean isDeletionGreaterThanOne = end - (start + tbend) > 1;//length of text currently being composed shortens by more than one.
-    final boolean previousComposingReplacedByShorter = end - start > tbend - tbstart && isDeletionGreaterThanOne;
+    //Length of text currently being composed shortens by more than one.
+    final boolean isDeletionGreaterThanOne = end - (start + tbend) > 1;
+    final boolean previousComposingReplacedByShorter = end - start > tbend - tbstart
+        && isDeletionGreaterThanOne;
 
-    final boolean isCalledFromDelete = tb == "" && tbstart == 0 && tbstart == tbend; //conditions based on parameters from SpannableStringBuilder.delete()
-    final boolean isDeletingInsideComposingRegion = !previousComposingReplacedByShorter && start != end && end > start + tbend; //TODO: Explain conditions
+    //Conditions based on parameters from SpannableStringBuilder.delete().
+    final boolean isCalledFromDelete = tb == "" && tbstart == 0 && tbstart == tbend;
+    //TODO: Explain conditions.
+    final boolean isDeletingInsideComposingRegion = !previousComposingReplacedByShorter
+        && start != end && end > start + tbend;
 
-    //To consider the cases when autocorrect increases the lenght of the text being composed by one, but changes more than one character.
-    //We should diff the two strings, and stop when we find a change.
-    final boolean isOriginalComposingRegionTextChanged = (isCalledFromDelete || isDeletingInsideComposingRegion || previousComposingReplacedByShorter) || !toString().subSequence(start, end).equals(tb.toString().subSequence(tbstart,end-start));
+    //To consider the cases when autocorrect increases the lenght of the text being composed by
+    //one, but changes more than one character.
+    final boolean isOriginalComposingRegionTextChanged = (isCalledFromDelete
+        || isDeletingInsideComposingRegion || previousComposingReplacedByShorter)
+        || !toString().subSequence(start, end).equals(tb.toString().subSequence(tbstart,end-start));
 
     final boolean isInsertionGreaterThanOne = tbend - (end - start) > 1;
     final boolean isInsertionAtLeastOne = tbend - (end - start) > 0;
     final boolean isInsertionOne = tbend - (end - start) == 1;
-    final boolean isInsertionAtLeastOneAndComposingTextChanged = isOriginalComposingRegionTextChanged && isInsertionAtLeastOne;//length of text currently being composed increases by more than one or text changed.
+    //Length of text currently being composed increases by more than one or text changed.
+    final boolean isInsertionAtLeastOneAndComposingTextChanged =
+        isOriginalComposingRegionTextChanged && isInsertionAtLeastOne;
     //Cases:
     //Your finishing the word by appending new content
     //Your finishing the word by correcting previous content and appending new content
 
-    final boolean previousComposingReplacedByLonger = end - start < tbend - tbstart && isInsertionAtLeastOneAndComposingTextChanged; //TODO: Consider the case where autocorrect increases the length of the composing text by one, but replaces more than one character.
+    final boolean previousComposingReplacedByLonger = end - start < tbend - tbstart
+        && isInsertionAtLeastOneAndComposingTextChanged;
     final boolean previousComposingReplacedBySame = end - start == tbend - tbstart;
     // Log.e("DELTAS", "edited word " + toString());
-    // if (isCalledFromDelete || isDeletingInsideComposingRegion || previousComposingReplacedByShorter) {
-    //   Log.e("DELTAS", "isOriginalComposingRegionTextChanged delete called" + isOriginalComposingRegionTextChanged);
+    // if (isCalledFromDelete || isDeletingInsideComposingRegion
+    //     || previousComposingReplacedByShorter) {
+    //   Log.e(
+    //       "DELTAS",
+    //       "isOriginalComposingRegionTextChanged delete called"
+    //           + isOriginalComposingRegionTextChanged);
     // } else {
-    //   Log.e("DELTAS", "isOriginalComposingRegionTextChanged " + toString().subSequence(start, end) + " " + toString().subSequence(start, end).length() + " == " + tb.subSequence(tbstart,end-start) + " " + tb.subSequence(tbstart,end-start).length() + " = " + isOriginalComposingRegionTextChanged);
+    //   Log.e(
+    //       "DELTAS",
+    //       "isOriginalComposingRegionTextChanged "
+    //           + toString().subSequence(start, end)
+    //           + " "
+    //           + toString().subSequence(start, end).length()
+    //           + " == "
+    //           + tb.subSequence(tbstart,end-start)
+    //           + " "
+    //           + tb.subSequence(tbstart,end-start).length()
+    //           + " = "
+    //           + isOriginalComposingRegionTextChanged);
     // }
 
     final boolean insertingOutsideComposingRegion = start == end;
-    final boolean insertingInsideComposingRegion = !insertingOutsideComposingRegion && !isOriginalComposingRegionTextChanged && isInsertionAtLeastOne && start + tbend > end; //previousComposingReplacedByLonger
+    final boolean insertingInsideComposingRegion = !insertingOutsideComposingRegion
+        && !isOriginalComposingRegionTextChanged && isInsertionAtLeastOne && start + tbend > end;
 
     if (isCalledFromDelete || isDeletingInsideComposingRegion) { //Deletion
       Log.e("DELTAS", "There has been a deletion");
@@ -262,13 +289,22 @@ class ListenableEditingState extends SpannableStringBuilder {
       } else if (isDeletingInsideComposingRegion) {
         Log.e("DELTAS", "isDeletingInsideComposingRegion");
       }
-      Log.e("DELTAS", "character : " + toString().subSequence(start + tbend,end) + " was removed at position: " + (start  + tbend) + " to " + end);
-    } else if ((previousComposingReplacedByShorter || previousComposingReplacedByLonger || previousComposingReplacedBySame) && !(insertingOutsideComposingRegion || insertingInsideComposingRegion)) { //Replacement
+      Log.e(
+          "DELTAS",
+          "character : "
+              + toString().subSequence(start + tbend,end)
+              + " was removed at position: "
+              + (start  + tbend)
+              + " to "
+              + end);
+    } else if ((previousComposingReplacedByShorter || previousComposingReplacedByLonger
+        || previousComposingReplacedBySame) && !(insertingOutsideComposingRegion
+        || insertingInsideComposingRegion)) { //Replacement
       Log.e("DELTAS", "There has been a replacement");
       if (previousComposingReplacedByShorter) {
-        //When auto correct replaces with a correction of shorter length. Is this case even possible?
-        //In english the auto correct doesn't seem to suggest a word shorter than the one in the composing region.
-        //When a selection is replaced by a single character.
+        //When auto correct replaces with a correction of shorter length. Is this case possible?
+        //In english the auto correct doesn't seem to suggest a word shorter than the one in the
+        //composing region. When a selection is replaced by a single character.
         Log.e("DELTAS", "previousComposingRegionReplacedByShorter");
       } else if (previousComposingReplacedByLonger) {
         //When auto correct replaces with a correction of greater length.
@@ -278,14 +314,30 @@ class ListenableEditingState extends SpannableStringBuilder {
         //When auto correct replaces a word with a correction of the same length.
         Log.e("DELTAS", "previousComposingReplacedBySame");
       }
-      Log.e("DELTAS", "sequence: " + toString().subSequence(start,end) + " at position start: " + start + " to end:" + end + " is replaced by " + tb.subSequence(tbstart, tbend));
+      Log.e(
+          "DELTAS",
+          "sequence: "
+              + toString().subSequence(start,end)
+              + " at position start: "
+              + start
+              + " to end:"
+              + end
+              + " is replaced by "
+              + tb.subSequence(tbstart, tbend));
     } else if (insertingOutsideComposingRegion || insertingInsideComposingRegion) { //Insertion
       if (insertingInsideComposingRegion) {
         Log.e("DELTAS", "insertingInsideComposingRegion");
       } else if(insertingOutsideComposingRegion) {
         Log.e("DELTAS", "insertingOutsideComposingRegion");
       }
-      Log.e("DELTAS", "inserting: " + tb.subSequence(end - start, tbend) + " at position " + end + " to " + (start + tbend));
+      Log.e(
+          "DELTAS",
+          "inserting: "
+              + tb.subSequence(end - start, tbend)
+              + " at position "
+              + end
+              + " to "
+              + (start + tbend));
     }
 
     boolean textChanged = end - start != tbend - tbstart;
