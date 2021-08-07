@@ -867,6 +867,7 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 
 // Change the range of selected text, without notifying the framework.
 - (void)setSelectedTextRangeLocal:(UITextRange*)selectedTextRange {
+  NSLog(@"setSelectedTextRangeLocal");
   if (_selectedTextRange != selectedTextRange) {
     UITextRange* oldSelectedRange = _selectedTextRange;
     if (self.hasText) {
@@ -881,6 +882,7 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 }
 
 - (void)setSelectedTextRange:(UITextRange*)selectedTextRange {
+  NSLog(@"setSelectedTextRange");
   [self setSelectedTextRangeLocal:selectedTextRange];
   [self updateEditingState];
 }
@@ -910,6 +912,38 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 // Replace the text within the specified range with the given text,
 // without notifying the framework.
 - (void)replaceRangeLocal:(NSRange)range withText:(NSString*)text {
+  // NSRange(start, length).
+  // The start indicates the starting position of the range.
+  // The length indicates how far the range extends from the start position.
+  // NSRange(10, 5) means that we want the range from position 10 to position 15.
+  // We start at position 10 and add 5 to get the final position 15.
+  NSInteger start = range.location;
+  NSInteger end = range.location + range.length;
+  NSInteger tbstart = 0;
+  NSInteger tbend = text.length;
+
+  NSLog(@"replaceRangeLocal range start: %lu to end: %lu character: %@ tbstart: %lu tbend: %lu", start, end, text, tbstart, tbend);
+  NSLog(@"Word being edited (before edits): %@", self.text);
+
+  BOOL isDeletingByReplacingWithEmpty = text.length == 0 && tbstart == 0 && tbstart == tbend;
+  BOOL isReplacedByShorter = tbend - tbstart < end - start;
+  BOOL isReplacedByLonger = tbend - tbstart > end - start;
+  BOOL isReplacedBySame = tbend - tbstart == end - start;
+  BOOL isReplaced = isReplacedByLonger || isReplacedByShorter || isReplacedBySame;
+
+  if (isDeletingByReplacingWithEmpty) { // Deletion.
+    NSString *deleted = [self.text substringWithRange: range];
+    NSLog(@"We have a deletion");
+    NSLog(@"We are deletion %@ at start position: %lu and end position: %lu", deleted, start, end);
+  } else if (start == end) { // Insertion.
+    NSLog(@"We have an insertion");
+    NSLog(@"We are inserting %@ at start position: %lu and end position: %lu", text, start, end);
+  } else if (isReplaced) { // Replacement.
+    NSString *replaced = [self.text substringWithRange: range];
+    NSLog(@"We have a replacement");
+    NSLog(@"We are replacing %@ at start position: %lu and end position: %lu with %@", replaced, start, end, text);
+  }
+
   NSRange selectedRange = _selectedTextRange.range;
 
   // Adjust the text selection:
@@ -931,6 +965,7 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 }
 
 - (void)replaceRange:(UITextRange*)range withText:(NSString*)text {
+  NSLog(@"replaceRange");
   NSRange replaceRange = ((FlutterTextRange*)range).range;
   [self replaceRangeLocal:replaceRange withText:text];
   [self updateEditingState];
@@ -988,6 +1023,7 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 }
 
 - (void)setMarkedText:(NSString*)markedText selectedRange:(NSRange)markedSelectedRange {
+  NSLog(@"setMarkedText");
   NSRange selectedRange = _selectedTextRange.range;
   NSRange markedTextRange = ((FlutterTextRange*)self.markedTextRange).range;
 
@@ -1323,6 +1359,8 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
 - (void)updateEditingState {
   NSUInteger selectionBase = ((FlutterTextPosition*)_selectedTextRange.start).index;
   NSUInteger selectionExtent = ((FlutterTextPosition*)_selectedTextRange.end).index;
+
+  NSLog(@"Update Editing State");
 
   // Empty compositing range is represented by the framework's TextRange.empty.
   NSInteger composingBase = -1;
