@@ -6,8 +6,8 @@
 
 #include <algorithm>
 #include <codecvt>
-#include <locale>
 #include <iostream>
+#include <locale>
 
 #if defined(_MSC_VER)
 // TODO(naifu): This temporary code is to solve link error.(VS2015/2017)
