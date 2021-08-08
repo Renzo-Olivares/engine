@@ -137,9 +137,9 @@ void TextInputModel::AddText(const std::u16string& text) {
   }
   size_t position = selection_.position();
   std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>
-    utf16_converter;
+      utf16_converter;
   std::cout << "Inserting: " << utf16_converter.to_bytes(text)
-            <<  " at index: " << position << std::endl;
+            << " at index: " << position << std::endl;
   text_.insert(position, text);
   selection_ = TextRange(position + text.length());
 }
