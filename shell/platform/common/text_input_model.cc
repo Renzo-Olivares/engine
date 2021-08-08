@@ -169,6 +169,7 @@ bool TextInputModel::Backspace() {
 }
 
 bool TextInputModel::Delete() {
+  // TODO: Log diff.
   if (DeleteSelected()) {
     return true;
   }
@@ -186,6 +187,7 @@ bool TextInputModel::Delete() {
 }
 
 bool TextInputModel::DeleteSurrounding(int offset_from_cursor, int count) {
+  // TODO: Log diff.
   size_t max_pos = editable_range().end();
   size_t start = selection_.extent();
   if (offset_from_cursor < 0) {
