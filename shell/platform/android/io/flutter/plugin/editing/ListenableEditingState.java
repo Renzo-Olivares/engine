@@ -52,6 +52,53 @@ class ListenableEditingState extends SpannableStringBuilder {
 
   private BaseInputConnection mDummyConnection;
 
+  // Fields for delta.
+  private String oldText;
+  private String newText;
+  private String deltaType;
+  private int modifiedRangeStart;
+  private int modifiedRangeExtent;
+  private int newRangeStart;
+  private int newRangeExtent;
+
+  public String getOldText() {
+    return oldText;
+  }
+
+  public String getNewText() {
+    return newText;
+  }
+
+  public String getDeltaType() {
+    return deltaType;
+  }
+
+  public int getModifiedRangeStart() {
+    return modifiedRangeStart;
+  }
+
+  public int getModifiedRangeExtent() {
+    return modifiedRangeExtent;
+  }
+
+  public int getNewRangeStart() {
+    return newRangeStart;
+  }
+
+  public int getNewRangeExtent() {
+    return newRangeExtent;
+  }
+
+  private void setDeltas(String oldTxt, String newTxt, String type, int modStart, int modExtent, int newStart, int newExtent) {
+    oldText = oldTxt;
+    newText = newTxt;
+    modifiedRangeStart = modStart;
+    modifiedRangeExtent = modExtent;
+    newRangeStart = newStart;
+    newRangeExtent = newExtent;
+    deltaType = type;
+  }
+
   // The View is only used for creating a dummy BaseInputConnection for setComposingRegion. The View
   // needs to have a non-null Context.
   public ListenableEditingState(TextInputChannel.TextEditState initalState, View view) {
@@ -304,6 +351,7 @@ class ListenableEditingState extends SpannableStringBuilder {
               + (start + tbend)
               + " to "
               + end);
+      setDeltas(toString().subSequence(start + tbend, end).toString(), "", "DELETION", start, start + tbend, start, start);
     } else if ((previousComposingReplacedByShorter
             || previousComposingReplacedByLonger
             || previousComposingReplacedBySame)
@@ -332,12 +380,14 @@ class ListenableEditingState extends SpannableStringBuilder {
               + end
               + " is replaced by "
               + tb.subSequence(tbstart, tbend));
+      setDeltas(toString().subSequence(start, end).toString(), tb.subSequence(tbstart, tbend).toString(), "REPLACEMENT", start, end, start + tbstart, start + tbend);
     } else if (insertingOutsideComposingRegion || insertingInsideComposingRegion) { // Insertion.
       if (insertingInsideComposingRegion) {
         Log.e("DELTAS", "insertingInsideComposingRegion");
       } else if (insertingOutsideComposingRegion) {
         Log.e("DELTAS", "insertingOutsideComposingRegion");
       }
+      setDeltas(toString().subSequence(start, end).toString(), tb.subSequence(end - start, tbend).toString(), "INSERTION", start, end, end, start + tbend);
       Log.e(
           "DELTAS",
           "inserting: "

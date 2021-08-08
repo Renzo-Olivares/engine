@@ -164,7 +164,7 @@ public class TextInputPluginTest {
     assertTrue(textInputPlugin.getEditable().toString().equals("initial input from framework"));
 
     verify(textInputChannel, times(0))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     textInputPlugin.setTextInputEditingState(
         testView,
@@ -172,7 +172,7 @@ public class TextInputPluginTest {
 
     assertTrue(textInputPlugin.getEditable().toString().equals("more update from the framework"));
     verify(textInputChannel, times(0))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
   }
 
   @Test
@@ -209,7 +209,7 @@ public class TextInputPluginTest {
     textInputPlugin.setTextInputEditingState(
         testView, new TextInputChannel.TextEditState("", 0, 0, -1, -1));
     verify(textInputChannel, times(0))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     InputConnectionAdaptor inputConnectionAdaptor =
         (InputConnectionAdaptor)
@@ -217,10 +217,10 @@ public class TextInputPluginTest {
 
     inputConnectionAdaptor.beginBatchEdit();
     verify(textInputChannel, times(0))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
     inputConnectionAdaptor.setComposingText("I do not fear computers. I fear the lack of them.", 1);
     verify(textInputChannel, times(0))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
     inputConnectionAdaptor.endBatchEdit();
     verify(textInputChannel, times(1))
         .updateEditingState(
@@ -229,32 +229,39 @@ public class TextInputPluginTest {
             eq(49),
             eq(49),
             eq(0),
-            eq(49));
+            eq(49),
+            any(),
+            any(),
+            any(),
+            anyInt(),
+            anyInt(),
+            anyInt(),
+            anyInt());
 
     inputConnectionAdaptor.beginBatchEdit();
 
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     inputConnectionAdaptor.endBatchEdit();
 
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     inputConnectionAdaptor.beginBatchEdit();
 
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     inputConnectionAdaptor.setSelection(3, 4);
     assertEquals(Selection.getSelectionStart(textInputPlugin.getEditable()), 3);
     assertEquals(Selection.getSelectionEnd(textInputPlugin.getEditable()), 4);
 
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt(), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     inputConnectionAdaptor.endBatchEdit();
 
@@ -265,7 +272,14 @@ public class TextInputPluginTest {
             eq(3),
             eq(4),
             eq(0),
-            eq(49));
+            eq(49),
+            any(),
+            any(),
+            any(),
+            anyInt(),
+            anyInt(),
+            anyInt(),
+            anyInt());
   }
 
   @Test
@@ -998,7 +1012,7 @@ public class TextInputPluginTest {
 
     // The autofill value of the focused field is sent via updateEditingState.
     verify(textInputChannel, times(1))
-        .updateEditingState(anyInt(), eq("focused field"), eq(13), eq(13), eq(-1), eq(-1));
+        .updateEditingState(anyInt(), eq("focused field"), eq(13), eq(13), eq(-1), eq(-1), any(), any(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     final ArgumentCaptor<HashMap> mapCaptor = ArgumentCaptor.forClass(HashMap.class);
 

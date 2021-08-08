@@ -174,13 +174,20 @@ public class TextInputChannel {
   }
 
   private static HashMap<Object, Object> createEditingStateJSON(
-      String text, int selectionStart, int selectionEnd, int composingStart, int composingEnd) {
+      String text, int selectionStart, int selectionEnd, int composingStart, int composingEnd, String oldTxt, String newTxt, String diffType, int modStart, int modEnd, int newStart, int newEnd) {
     HashMap<Object, Object> state = new HashMap<>();
     state.put("text", text);
     state.put("selectionBase", selectionStart);
     state.put("selectionExtent", selectionEnd);
     state.put("composingBase", composingStart);
     state.put("composingExtent", composingEnd);
+    state.put("oldText", oldTxt);
+    state.put("newText", newTxt);
+    state.put("delta", diffType);
+    state.put("modifiedBase", modStart);
+    state.put("modifiedExtent", modEnd);
+    state.put("newBase", newStart);
+    state.put("newExtent", newEnd);
     return state;
   }
   /**
@@ -192,7 +199,14 @@ public class TextInputChannel {
       int selectionStart,
       int selectionEnd,
       int composingStart,
-      int composingEnd) {
+      int composingEnd,
+      String oldText,
+      String newText,
+      String diffType,
+      int oldStart,
+      int oldExtent,
+      int newStart,
+      int newExtent) {
     Log.v(
         TAG,
         "Sending message to update editing state: \n"
@@ -227,10 +241,31 @@ public class TextInputChannel {
             + composingStart
             + "\n"
             + "Composing end: "
-            + composingEnd);
+            + composingEnd
+            + "\n"
+            + "Old text: "
+            + oldText
+            + "\n"
+            + "New text: "
+            + newText
+            + "\n"
+            + "Diff Type: "
+            + diffType
+            + "\n"
+            + "Old start: "
+            + oldStart
+            + "\n"
+            + "Old end: "
+            + oldExtent
+            + "\n"
+            + "New start: "
+            + newStart
+            + "\n"
+            + "New end: "
+            + newExtent);
 
     final HashMap<Object, Object> state =
-        createEditingStateJSON(text, selectionStart, selectionEnd, composingStart, composingEnd);
+        createEditingStateJSON(text, selectionStart, selectionEnd, composingStart, composingEnd, oldText, newText, diffType, oldStart, oldExtent, newStart, newExtent);
 
     channel.invokeMethod("TextInputClient.updateEditingState", Arrays.asList(inputClientId, state));
   }
@@ -248,7 +283,7 @@ public class TextInputChannel {
       final TextEditState state = element.getValue();
       json.put(
           element.getKey(),
-          createEditingStateJSON(state.text, state.selectionStart, state.selectionEnd, -1, -1));
+          createEditingStateJSON(state.text, state.selectionStart, state.selectionEnd, -1, -1, "", "", "", -1, -1, -1, -1));
     }
     channel.invokeMethod(
         "TextInputClient.updateEditingStateWithTag", Arrays.asList(inputClientId, json));
