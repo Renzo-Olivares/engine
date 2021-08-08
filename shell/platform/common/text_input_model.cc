@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <codecvt>
 #include <locale>
+#include <iostream>
 
 #if defined(_MSC_VER)
 // TODO(naifu): This temporary code is to solve link error.(VS2015/2017)
@@ -135,6 +136,9 @@ void TextInputModel::AddText(const std::u16string& text) {
     composing_range_.set_end(composing_range_.start() + text.length());
   }
   size_t position = selection_.position();
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>
+    utf16_converter;
+  std::cout << "Inserting: " << utf16_converter.to_bytes(text) <<  " at index: " << position << std::endl;
   text_.insert(position, text);
   selection_ = TextRange(position + text.length());
 }
