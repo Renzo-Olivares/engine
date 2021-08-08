@@ -462,7 +462,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
 #pragma mark -
 #pragma mark NSTextInputClient
 
-- (void)insertText:(id)string replacementRange:(NSRange)range {  
+- (void)insertText:(id)string replacementRange:(NSRange)range {
   if (_activeModel == nullptr) {
     return;
   }
