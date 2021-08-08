@@ -1687,6 +1687,7 @@ class TextEditingChannel {
 
   /// Sends the 'TextInputClient.updateEditingState' message to the framework.
   void updateEditingState(int? clientId, EditingState? editingState) {
+    print('hello from web engine updateEditingState');
     EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
       'flutter/textinput',
       const JSONMethodCodec().encodeMethodCall(
@@ -1795,6 +1796,7 @@ class HybridTextEditing {
     strategy.enable(
       configuration!,
       onChange: (EditingState? editingState) {
+        print('onChange ' + editingState!.text!);
         channel.updateEditingState(_clientId, editingState);
       },
       onAction: (String? inputAction) {
