@@ -89,7 +89,14 @@ class ListenableEditingState extends SpannableStringBuilder {
     return newRangeExtent;
   }
 
-  private void setDeltas(String oldTxt, String newTxt, String type, int modStart, int modExtent, int newStart, int newExtent) {
+  private void setDeltas(
+      String oldTxt,
+      String newTxt,
+      String type,
+      int modStart,
+      int modExtent,
+      int newStart,
+      int newExtent) {
     oldText = oldTxt;
     newText = newTxt;
     modifiedRangeStart = modStart;
@@ -351,7 +358,14 @@ class ListenableEditingState extends SpannableStringBuilder {
               + (start + tbend)
               + " to "
               + end);
-      setDeltas(toString().subSequence(start + tbend, end).toString(), "", "DELETION", start, start + tbend, start, start);
+      setDeltas(
+          toString().subSequence(start + tbend, end).toString(),
+          "",
+          "DELETION",
+          start,
+          start + tbend,
+          start,
+          start);
     } else if ((previousComposingReplacedByShorter
             || previousComposingReplacedByLonger
             || previousComposingReplacedBySame)
@@ -380,14 +394,26 @@ class ListenableEditingState extends SpannableStringBuilder {
               + end
               + " is replaced by "
               + tb.subSequence(tbstart, tbend));
-      setDeltas(toString().subSequence(start, end).toString(), tb.subSequence(tbstart, tbend).toString(), "REPLACEMENT", start, end, start + tbstart, start + tbend);
+      setDeltas(
+          toString().subSequence(start, end).toString(),
+          tb.subSequence(tbstart, tbend).toString(),
+          "REPLACEMENT", start, end,
+          start + tbstart,
+          start + tbend);
     } else if (insertingOutsideComposingRegion || insertingInsideComposingRegion) { // Insertion.
       if (insertingInsideComposingRegion) {
         Log.e("DELTAS", "insertingInsideComposingRegion");
       } else if (insertingOutsideComposingRegion) {
         Log.e("DELTAS", "insertingOutsideComposingRegion");
       }
-      setDeltas(toString().subSequence(start, end).toString(), tb.subSequence(end - start, tbend).toString(), "INSERTION", start, end, end, start + tbend);
+      setDeltas(
+          toString().subSequence(start, end).toString(),
+          tb.subSequence(end - start, tbend).toString(),
+          "INSERTION",
+          start,
+          end,
+          end,
+          start + tbend);
       Log.e(
           "DELTAS",
           "inserting: "
