@@ -397,7 +397,9 @@ class ListenableEditingState extends SpannableStringBuilder {
       setDeltas(
           toString().subSequence(start, end).toString(),
           tb.subSequence(tbstart, tbend).toString(),
-          "REPLACEMENT", start, end,
+          "REPLACEMENT",
+          start,
+          end,
           start + tbstart,
           start + tbend);
     } else if (insertingOutsideComposingRegion || insertingInsideComposingRegion) { // Insertion.

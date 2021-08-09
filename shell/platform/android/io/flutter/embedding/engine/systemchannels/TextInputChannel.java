@@ -277,18 +277,18 @@ public class TextInputChannel {
 
     final HashMap<Object, Object> state =
         createEditingStateJSON(
-          text,
-          selectionStart,
-          selectionEnd,
-          composingStart,
-          composingEnd,
-          oldText,
-          newText,
-          diffType,
-          oldStart,
-          oldExtent,
-          newStart,
-          newExtent);
+            text,
+            selectionStart,
+            selectionEnd,
+            composingStart,
+            composingEnd,
+            oldText,
+            newText,
+            diffType,
+            oldStart,
+            oldExtent,
+            newStart,
+            newExtent);
 
     channel.invokeMethod("TextInputClient.updateEditingState", Arrays.asList(inputClientId, state));
   }
@@ -307,18 +307,18 @@ public class TextInputChannel {
       json.put(
           element.getKey(),
           createEditingStateJSON(
-            state.text,
-            state.selectionStart,
-            state.selectionEnd,
-            -1,
-            -1,
-            "",
-            "",
-            "",
-            -1,
-            -1,
-            -1,
-            -1));
+              state.text,
+              state.selectionStart,
+              state.selectionEnd,
+              -1,
+              -1,
+              "",
+              "",
+              "",
+              -1,
+              -1,
+              -1,
+              -1));
     }
     channel.invokeMethod(
         "TextInputClient.updateEditingStateWithTag", Arrays.asList(inputClientId, json));
