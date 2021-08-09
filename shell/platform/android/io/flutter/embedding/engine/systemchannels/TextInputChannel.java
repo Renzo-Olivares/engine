@@ -174,17 +174,17 @@ public class TextInputChannel {
   }
 
   private static HashMap<Object, Object> createEditingStateJSON(
-      String text, 
-      int selectionStart, 
-      int selectionEnd, 
-      int composingStart, 
-      int composingEnd, 
-      String oldTxt, 
-      String newTxt, 
-      String diffType, 
-      int modStart, 
-      int modEnd, 
-      int newStart, 
+      String text,
+      int selectionStart,
+      int selectionEnd,
+      int composingStart,
+      int composingEnd,
+      String oldTxt,
+      String newTxt,
+      String diffType,
+      int modStart,
+      int modEnd,
+      int newStart,
       int newEnd) {
     HashMap<Object, Object> state = new HashMap<>();
     state.put("text", text);
@@ -277,17 +277,17 @@ public class TextInputChannel {
 
     final HashMap<Object, Object> state =
         createEditingStateJSON(
-          text, 
-          selectionStart, 
-          selectionEnd, 
-          composingStart, 
-          composingEnd, 
-          oldText, 
-          newText, 
-          diffType, 
-          oldStart, 
-          oldExtent, 
-          newStart, 
+          text,
+          selectionStart,
+          selectionEnd,
+          composingStart,
+          composingEnd,
+          oldText,
+          newText,
+          diffType,
+          oldStart,
+          oldExtent,
+          newStart,
           newExtent);
 
     channel.invokeMethod("TextInputClient.updateEditingState", Arrays.asList(inputClientId, state));
@@ -307,17 +307,17 @@ public class TextInputChannel {
       json.put(
           element.getKey(),
           createEditingStateJSON(
-            state.text, 
-            state.selectionStart, 
-            state.selectionEnd, 
-            -1, 
-            -1, 
-            "", 
-            "", 
-            "", 
-            -1, 
-            -1, 
-            -1, 
+            state.text,
+            state.selectionStart,
+            state.selectionEnd,
+            -1,
+            -1,
+            "",
+            "",
+            "",
+            -1,
+            -1,
+            -1,
             -1));
     }
     channel.invokeMethod(
