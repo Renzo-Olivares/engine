@@ -359,13 +359,13 @@ class ListenableEditingState extends SpannableStringBuilder {
               + " to "
               + end);
       setDeltas(
+          toString().subSequence(start, end).toString(),
           toString().subSequence(start + tbend, end).toString(),
-          "",
           "DELETION",
           start,
+          end,
           start + tbend,
-          start,
-          start);
+          end);
     } else if ((previousComposingReplacedByShorter
             || previousComposingReplacedByLonger
             || previousComposingReplacedBySame)
