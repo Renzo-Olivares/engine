@@ -546,6 +546,14 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   // The view has reached end of life, and is no longer
   // allowed to access its textInputDelegate.
   BOOL _decommissioned;
+
+  NSMutableString* _oldText;
+  NSMutableString* _newText;
+  NSMutableString* _deltaType;
+  NSInteger _modifiedRangeStart;
+  NSInteger _modifiedRangeExtent;
+  NSInteger _newRangeStart;
+  NSInteger _newRangeExtent;
 }
 
 @synthesize tokenizer = _tokenizer;
@@ -566,6 +574,15 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
     // an affine transform.
     _editableTransform = CATransform3D();
     _isFloatingCursorActive = false;
+
+    // Delta
+    _oldText = [[NSMutableString alloc] init];
+    _newText = [[NSMutableString alloc] init];
+    _deltaType = [[NSMutableString alloc] init];
+    _modifiedRangeStart = -1;
+    _modifiedRangeExtent = -1;
+    _newRangeStart = -1;
+    _newRangeExtent = -1;
 
     // UITextInputTraits
     _autocapitalizationType = UITextAutocapitalizationTypeSentences;
@@ -909,6 +926,16 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   return [self.text substringWithRange:safeRange];
 }
 
+- (void)setDeltas:(NSMutableString*)oldText newText:(NSMutableString*)newTxt type:(NSMutableString*)deltaType modifiedStart:(NSInteger)modStart modifiedEnd:(NSInteger)modEnd deltaStart:(NSInteger)newStart deltaEnd:(NSInteger)newEnd {
+  _oldText = oldText;
+  _newText = newTxt;
+  _deltaType = deltaType;
+  _modifiedRangeStart = modStart;
+  _modifiedRangeExtent = modEnd;
+  _newRangeStart = newStart;
+  _newRangeExtent = newEnd;
+}
+
 // Replace the text within the specified range with the given text,
 // without notifying the framework.
 - (void)replaceRangeLocal:(NSRange)range withText:(NSString*)text {
@@ -933,17 +960,24 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
   BOOL isReplaced = isReplacedByLonger || isReplacedByShorter || isReplacedBySame;
 
   if (isDeletingByReplacingWithEmpty) {  // Deletion.
-    NSString* deleted = [self.text substringWithRange:range];
+    NSMutableString* deleted = [[self.text substringWithRange:range] mutableCopy];
     NSLog(@"We have a deletion");
     NSLog(@"We are deletion %@ at start position: %lu and end position: %lu", deleted, start, end);
+    NSMutableString* type = [@"DELETION" mutableCopy];
+    [self setDeltas:[self.text mutableCopy] newText:deleted type:type modifiedStart:start modifiedEnd:end deltaStart:start deltaEnd: end];
   } else if (start == end) {  // Insertion.
     NSLog(@"We have an insertion");
     NSLog(@"We are inserting %@ at start position: %lu and end position: %lu", text, start, end);
+    NSMutableString* type = [@"INSERTION" mutableCopy];
+    NSMutableString* textBeforeInsertion = [self.text mutableCopy];
+    [self setDeltas:textBeforeInsertion newText:[text mutableCopy] type:type modifiedStart:start modifiedEnd:end deltaStart:start deltaEnd: start + tbend];
   } else if (isReplaced) {  // Replacement.
-    NSString* replaced = [self.text substringWithRange:range];
+    NSMutableString* replaced = [[self.text substringWithRange:range] mutableCopy];
     NSLog(@"We have a replacement");
     NSLog(@"We are replacing %@ at start position: %lu and end position: %lu with %@", replaced,
           start, end, text);
+    NSMutableString* type = [@"REPLACEMENT" mutableCopy];
+    [self setDeltas:replaced newText:[text mutableCopy] type:type modifiedStart:start modifiedEnd:end deltaStart:start deltaEnd: start + tbend];
   }
 
   NSRange selectedRange = _selectedTextRange.range;
@@ -1380,6 +1414,13 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
     @"composingBase" : @(composingBase),
     @"composingExtent" : @(composingExtent),
     @"text" : [NSString stringWithString:self.text],
+    @"oldText" : [NSString stringWithString:self.oldText],
+    @"newText" : [NSString stringWithString:self.newText],
+    @"delta" : [NSString stringWithString:self.deltaType],
+    @"modifiedBase" : @(_modifiedRangeStart),
+    @"modifiedExtent" : @(_modifiedRangeExtent),
+    @"newBase" : @(_newRangeStart),
+    @"newExtent" : @(_newRangeExtent),
   };
 
   if (_textInputClient == 0 && _autofillId != nil) {
