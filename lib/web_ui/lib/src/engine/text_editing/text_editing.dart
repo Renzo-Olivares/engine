@@ -913,6 +913,30 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
+    const html.EventStreamProvider<html.Event> beforeInput =
+    html.EventStreamProvider<html.Event>('beforeinput');
+
+    activeDomElement.addEventListener('beforeinput', (event) {
+      html.InputElement? currentTarget = event.currentTarget as html.InputElement;
+
+      if (currentTarget != null) {
+        String? value = currentTarget.value;
+        if (value != null) {
+          print('from beforeInput: ' + value);
+        }
+      }
+    });
+    activeDomElement.addEventListener('input', (event) {
+      html.InputElement? currentTarget = event.currentTarget as html.InputElement;
+
+      if (currentTarget != null) {
+        String? value = currentTarget.value;
+        if (value != null) {
+          print('from input: ' + value);
+        }
+      }
+    });
+
     // Refocus on the activeDomElement after blur, so that user can keep editing the
     // text field.
     subscriptions.add(activeDomElement.onBlur.listen((_) {
@@ -986,6 +1010,15 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
   void handleChange(html.Event event) {
     assert(isEnabled);
+
+    html.InputElement? currentTarget = event.currentTarget as html.InputElement;
+
+    if (currentTarget != null) {
+      String? value = currentTarget.value;
+      if (value != null) {
+        print('from handleChange: ' + value);
+      }
+    }
 
     final EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
 
@@ -1796,7 +1829,7 @@ class HybridTextEditing {
     strategy.enable(
       configuration!,
       onChange: (EditingState? editingState) {
-        print('onChange ' + editingState!.text!);
+        // print('onChange ' + editingState!.text!);
         channel.updateEditingState(_clientId, editingState);
       },
       onAction: (String? inputAction) {
