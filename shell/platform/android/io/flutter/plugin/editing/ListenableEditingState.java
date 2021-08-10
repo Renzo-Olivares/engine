@@ -344,20 +344,20 @@ class ListenableEditingState extends SpannableStringBuilder {
             && start + tbend > end;
 
     if (isCalledFromDelete || isDeletingInsideComposingRegion) { // Deletion.
-      Log.e("DELTAS", "There has been a deletion");
-      if (isCalledFromDelete) {
-        Log.e("DELTAS", "isCalledFromDelete");
-      } else if (isDeletingInsideComposingRegion) {
-        Log.e("DELTAS", "isDeletingInsideComposingRegion");
-      }
-      Log.e(
-          "DELTAS",
-          "character : "
-              + toString().subSequence(start + tbend, end)
-              + " was removed at position: "
-              + (start + tbend)
-              + " to "
-              + end);
+      // Log.e("DELTAS", "There has been a deletion");
+      // if (isCalledFromDelete) {
+      //   Log.e("DELTAS", "isCalledFromDelete");
+      // } else if (isDeletingInsideComposingRegion) {
+      //   Log.e("DELTAS", "isDeletingInsideComposingRegion");
+      // }
+      // Log.e(
+      //     "DELTAS",
+      //     "character : "
+      //         + toString().subSequence(start + tbend, end)
+      //         + " was removed at position: "
+      //         + (start + tbend)
+      //         + " to "
+      //         + end);
       setDeltas(
           toString().subSequence(start, end).toString(),
           toString().subSequence(start + tbend, end).toString(),
@@ -370,30 +370,30 @@ class ListenableEditingState extends SpannableStringBuilder {
             || previousComposingReplacedByLonger
             || previousComposingReplacedBySame)
         && !(insertingOutsideComposingRegion || insertingInsideComposingRegion)) { // Replacement.
-      Log.e("DELTAS", "There has been a replacement");
+      // Log.e("DELTAS", "There has been a replacement");
       if (previousComposingReplacedByShorter) {
         // When auto correct replaces with a correction of shorter length. Is this case possible?
         // In english the auto correct doesn't seem to suggest a word shorter than the one in the
         // composing region. When a selection is replaced by a single character.
-        Log.e("DELTAS", "previousComposingRegionReplacedByShorter");
+        // Log.e("DELTAS", "previousComposingRegionReplacedByShorter");
       } else if (previousComposingReplacedByLonger) {
         // When auto correct replaces with a correction of greater length.
         // Currently this case is not hit, it registers as an insertion inside the composing region.
-        Log.e("DELTAS", "previousComposingRegionReplacedByLonger");
+        // Log.e("DELTAS", "previousComposingRegionReplacedByLonger");
       } else if (previousComposingReplacedBySame) {
         // When auto correct replaces a word with a correction of the same length.
-        Log.e("DELTAS", "previousComposingReplacedBySame");
+        // Log.e("DELTAS", "previousComposingReplacedBySame");
       }
-      Log.e(
-          "DELTAS",
-          "sequence: "
-              + toString().subSequence(start, end)
-              + " at position start: "
-              + start
-              + " to end:"
-              + end
-              + " is replaced by "
-              + tb.subSequence(tbstart, tbend));
+      // Log.e(
+      //     "DELTAS",
+      //     "sequence: "
+      //         + toString().subSequence(start, end)
+      //         + " at position start: "
+      //         + start
+      //         + " to end:"
+      //         + end
+      //         + " is replaced by "
+      //         + tb.subSequence(tbstart, tbend));
       setDeltas(
           toString().subSequence(start, end).toString(),
           tb.subSequence(tbstart, tbend).toString(),
@@ -404,9 +404,9 @@ class ListenableEditingState extends SpannableStringBuilder {
           start + tbend);
     } else if (insertingOutsideComposingRegion || insertingInsideComposingRegion) { // Insertion.
       if (insertingInsideComposingRegion) {
-        Log.e("DELTAS", "insertingInsideComposingRegion");
+        // Log.e("DELTAS", "insertingInsideComposingRegion");
       } else if (insertingOutsideComposingRegion) {
-        Log.e("DELTAS", "insertingOutsideComposingRegion");
+        // Log.e("DELTAS", "insertingOutsideComposingRegion");
       }
       setDeltas(
           toString().subSequence(start, end).toString(),
@@ -416,14 +416,14 @@ class ListenableEditingState extends SpannableStringBuilder {
           end,
           end,
           start + tbend);
-      Log.e(
-          "DELTAS",
-          "inserting: "
-              + tb.subSequence(end - start, tbend)
-              + " at position "
-              + end
-              + " to "
-              + (start + tbend));
+      // Log.e(
+      //     "DELTAS",
+      //     "inserting: "
+      //         + tb.subSequence(end - start, tbend)
+      //         + " at position "
+      //         + end
+      //         + " to "
+      //         + (start + tbend));
     }
 
     boolean textChanged = end - start != tbend - tbstart;
