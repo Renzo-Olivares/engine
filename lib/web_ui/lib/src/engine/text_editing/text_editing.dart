@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js_util' as js_util;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -913,28 +914,8 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
-    const html.EventStreamProvider<html.Event> beforeInput =
-    html.EventStreamProvider<html.Event>('beforeinput');
-
     activeDomElement.addEventListener('beforeinput', (event) {
-      html.InputElement? currentTarget = event.currentTarget as html.InputElement;
-
-      if (currentTarget != null) {
-        String? value = currentTarget.value;
-        if (value != null) {
-          print('from beforeInput: ' + value);
-        }
-      }
-    });
-    activeDomElement.addEventListener('input', (event) {
-      html.InputElement? currentTarget = event.currentTarget as html.InputElement;
-
-      if (currentTarget != null) {
-        String? value = currentTarget.value;
-        if (value != null) {
-          print('from input: ' + value);
-        }
-      }
+      print('beforeinput delta: ' + js_util.getProperty(event, 'data').toString() + ' delta length: ' + js_util.getProperty(event, 'data').toString().length.toString());
     });
 
     // Refocus on the activeDomElement after blur, so that user can keep editing the
@@ -1010,15 +991,6 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
   void handleChange(html.Event event) {
     assert(isEnabled);
-
-    html.InputElement? currentTarget = event.currentTarget as html.InputElement;
-
-    if (currentTarget != null) {
-      String? value = currentTarget.value;
-      if (value != null) {
-        print('from handleChange: ' + value);
-      }
-    }
 
     final EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
 
@@ -1720,7 +1692,7 @@ class TextEditingChannel {
 
   /// Sends the 'TextInputClient.updateEditingState' message to the framework.
   void updateEditingState(int? clientId, EditingState? editingState) {
-    print('hello from web engine updateEditingState');
+    // print('hello from web engine updateEditingState');
     EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
       'flutter/textinput',
       const JSONMethodCodec().encodeMethodCall(
