@@ -277,8 +277,8 @@ class ListenableEditingState extends SpannableStringBuilder {
     final boolean isOriginalComposingRegionTextChanged =
         (isCalledFromDelete || isDeletingInsideComposingRegion || isReplacedByShorter)
             || !toString()
-              .subSequence(start, end)
-              .equals(tb.toString().subSequence(tbstart, end - start));
+                .subSequence(start, end)
+                .equals(tb.toString().subSequence(tbstart, end - start));
 
     // A replacement means the original composing region has changed, anything else will be
     // considered an insertion.
@@ -288,7 +288,8 @@ class ListenableEditingState extends SpannableStringBuilder {
 
     if (isCalledFromDelete || isDeletingInsideComposingRegion) {
       Log.e("DELTAS", "DELETION");
-      setDeltas(toString(), toString().subSequence(start + tbend, end).toString(), "DELETION", end, end);
+      setDeltas(
+          toString(), toString().subSequence(start + tbend, end).toString(), "DELETION", end, end);
     } else if ((start == end || isInsertingInsideComposingRegion)
         && !isOriginalComposingRegionTextChanged) {
       Log.e("DELTAS", "INSERTION");

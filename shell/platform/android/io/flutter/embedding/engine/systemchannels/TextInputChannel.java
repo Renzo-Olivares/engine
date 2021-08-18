@@ -241,12 +241,7 @@ public class TextInputChannel {
             + composingEnd);
 
     final HashMap<Object, Object> state =
-        createEditingStateJSON(
-            text,
-            selectionStart,
-            selectionEnd,
-            composingStart,
-            composingEnd);
+        createEditingStateJSON(text, selectionStart, selectionEnd, composingStart, composingEnd);
 
     channel.invokeMethod("TextInputClient.updateEditingState", Arrays.asList(inputClientId, state));
   }
