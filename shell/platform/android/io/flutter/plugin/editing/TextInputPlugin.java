@@ -651,12 +651,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
           composingStart,
           composingEnd);
       textInputChannel.updateEditingStateWithDelta(
-          inputTarget.id,
-          oldText,
-          newText,
-          deltaType,
-          newStart,
-          newEnd);
+          inputTarget.id, oldText, newText, deltaType, newStart, newEnd);
       // TODO: Update TextEditState with deltas?
       mLastKnownFrameworkTextEditingState =
           new TextEditState(

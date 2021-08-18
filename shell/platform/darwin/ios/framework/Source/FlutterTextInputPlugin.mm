@@ -963,20 +963,20 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
     NSLog(@"We are deletion %@ at start position: %lu and end position: %lu", deleted, start, end);
     NSMutableString* type = [@"DELETION" mutableCopy];
     [self setDeltas:[self.text mutableCopy]
-              newText:deleted
-                 type:type
-           deltaStart:start
-             deltaEnd:end];
+            newText:deleted
+               type:type
+         deltaStart:start
+           deltaEnd:end];
   } else if (start == end) {  // Insertion.
     NSLog(@"We have an insertion");
     NSLog(@"We are inserting %@ at start position: %lu and end position: %lu", text, start, end);
     NSMutableString* type = [@"INSERTION" mutableCopy];
     NSMutableString* textBeforeInsertion = [self.text mutableCopy];
     [self setDeltas:textBeforeInsertion
-              newText:[text mutableCopy]
-                 type:type
-           deltaStart:start
-             deltaEnd:start + tbend];
+            newText:[text mutableCopy]
+               type:type
+         deltaStart:start
+           deltaEnd:end];
   } else if (isReplaced) {  // Replacement.
     NSMutableString* replaced = [[self.text substringWithRange:range] mutableCopy];
     NSLog(@"We have a replacement");
@@ -984,10 +984,10 @@ static FlutterAutofillType autofillTypeOf(NSDictionary* configuration) {
           start, end, text);
     NSMutableString* type = [@"REPLACEMENT" mutableCopy];
     [self setDeltas:replaced
-              newText:[text mutableCopy]
-                 type:type
-           deltaStart:start
-             deltaEnd:start + tbend];
+            newText:[text mutableCopy]
+               type:type
+         deltaStart:start
+           deltaEnd:start + tbend];
   }
 
   NSRange selectedRange = _selectedTextRange.range;

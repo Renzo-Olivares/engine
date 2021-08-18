@@ -79,12 +79,7 @@ class ListenableEditingState extends SpannableStringBuilder {
     return deltaEnd;
   }
 
-  private void setDeltas(
-      String oldTxt,
-      String newTxt,
-      String type,
-      int newStart,
-      int newExtent) {
+  private void setDeltas(String oldTxt, String newTxt, String type, int newStart, int newExtent) {
     oldText = oldTxt;
     deltaText = newTxt;
     deltaStart = newStart;
@@ -273,48 +268,34 @@ class ListenableEditingState extends SpannableStringBuilder {
     final boolean isReplacedByLonger = tbend - tbstart > end - start;
     final boolean isReplacedBySame = tbend - tbstart == end - start;
 
-    //Is deleting/inserting at the end of a composing region.
+    // Is deleting/inserting at the end of a composing region.
     final boolean isDeletingInsideComposingRegion = !isReplacedByShorter && start + tbend < end;
     final boolean isInsertingInsideComposingRegion = start + tbend > end;
 
     // To consider the cases when autocorrect increases the length of the text being composed by
     // one, but changes more than one character.
     final boolean isOriginalComposingRegionTextChanged =
-        (isCalledFromDelete
-            || isDeletingInsideComposingRegion
-            || isReplacedByShorter)
+        (isCalledFromDelete || isDeletingInsideComposingRegion || isReplacedByShorter)
             || !toString()
-            .subSequence(start, end)
-            .equals(tb.toString().subSequence(tbstart, end - start));
+              .subSequence(start, end)
+              .equals(tb.toString().subSequence(tbstart, end - start));
 
-    // A replacement means the original composing region has changed, anything else will be considered
-    // an insertion.
-    final boolean isReplaced = isOriginalComposingRegionTextChanged && (isReplacedByLonger || isReplacedBySame || isReplacedByShorter);
+    // A replacement means the original composing region has changed, anything else will be
+    // considered an insertion.
+    final boolean isReplaced =
+        isOriginalComposingRegionTextChanged
+            && (isReplacedByLonger || isReplacedBySame || isReplacedByShorter);
 
     if (isCalledFromDelete || isDeletingInsideComposingRegion) {
       Log.e("DELTAS", "DELETION");
-      setDeltas(
-          toString(),
-          toString().subSequence(start + tbend, end).toString(),
-          "DELETION",
-          end,
-          end);
-    } else if ((start == end || isInsertingInsideComposingRegion) && !isOriginalComposingRegionTextChanged) {
+      setDeltas(toString(), toString().subSequence(start + tbend, end).toString(), "DELETION", end, end);
+    } else if ((start == end || isInsertingInsideComposingRegion)
+        && !isOriginalComposingRegionTextChanged) {
       Log.e("DELTAS", "INSERTION");
-      setDeltas(
-          toString(),
-          tb.subSequence(end - start, tbend).toString(),
-          "INSERTION",
-          end,
-          end);
+      setDeltas(toString(), tb.subSequence(end - start, tbend).toString(), "INSERTION", end, end);
     } else if (isReplaced) {
       Log.e("DELTAS", "REPLACEMENT");
-      setDeltas(
-          toString(),
-          tb.subSequence(tbstart, tbend).toString(),
-          "REPLACEMENT",
-          start,
-          end);
+      setDeltas(toString(), tb.subSequence(tbstart, tbend).toString(), "REPLACEMENT", start, end);
     }
 
     boolean textChanged = end - start != tbend - tbstart;
