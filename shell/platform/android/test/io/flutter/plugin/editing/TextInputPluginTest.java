@@ -164,8 +164,7 @@ public class TextInputPluginTest {
     assertTrue(textInputPlugin.getEditable().toString().equals("initial input from framework"));
 
     verify(textInputChannel, times(0))
-        .updateEditingState(
-            anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
 
     textInputPlugin.setTextInputEditingState(
         testView,
@@ -173,8 +172,7 @@ public class TextInputPluginTest {
 
     assertTrue(textInputPlugin.getEditable().toString().equals("more update from the framework"));
     verify(textInputChannel, times(0))
-        .updateEditingState(
-            anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
+        .updateEditingState(anyInt(), any(), anyInt(), anyInt(), anyInt(), anyInt());
   }
 
   @Test
