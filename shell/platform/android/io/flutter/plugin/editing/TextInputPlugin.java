@@ -628,12 +628,10 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
     // Deltas
     final String oldText = mEditable.getOldText();
-    final String newText = mEditable.getNewText();
+    final String newText = mEditable.getDeltaText();
     final String deltaType = mEditable.getDeltaType();
-    final int modStart = mEditable.getModifiedRangeStart();
-    final int modEnd = mEditable.getModifiedRangeExtent();
-    final int newStart = mEditable.getNewRangeStart();
-    final int newEnd = mEditable.getNewRangeExtent();
+    final int newStart = mEditable.getDeltaStart();
+    final int newEnd = mEditable.getDeltaEnd();
     final boolean skipFrameworkUpdate =
         // The framework needs to send its editing state first.
         mLastKnownFrameworkTextEditingState == null
@@ -651,12 +649,12 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
           selectionStart,
           selectionEnd,
           composingStart,
-          composingEnd,
+          composingEnd);
+      textInputChannel.updateEditingStateWithDelta(
+          inputTarget.id,
           oldText,
           newText,
           deltaType,
-          modStart,
-          modEnd,
           newStart,
           newEnd);
       // TODO: Update TextEditState with deltas?

@@ -1258,12 +1258,10 @@ public class InputConnectionAdaptorTest {
     public int composingStart;
     public int composingEnd;
     public String oldText;
-    public String newText;
+    public String deltaText;
     public String diffType;
-    public int oldStart;
-    public int oldExtent;
-    public int newStart;
-    public int newExtent;
+    public int deltaStart;
+    public int deltaEnd;
     public int updateEditingStateInvocations = 0;
 
     @Override
@@ -1273,27 +1271,13 @@ public class InputConnectionAdaptorTest {
         int selectionStart,
         int selectionEnd,
         int composingStart,
-        int composingEnd,
-        String oldText,
-        String newText,
-        String diffType,
-        int oldStart,
-        int oldExtent,
-        int newStart,
-        int newExtent) {
+        int composingEnd) {
       this.inputClientId = inputClientId;
       this.text = text;
       this.selectionStart = selectionStart;
       this.selectionEnd = selectionEnd;
       this.composingStart = composingStart;
       this.composingEnd = composingEnd;
-      this.oldText = oldText;
-      this.newText = newText;
-      this.diffType = diffType;
-      this.oldStart = oldStart;
-      this.oldExtent = oldExtent;
-      this.newStart = newStart;
-      this.newExtent = newExtent;
       updateEditingStateInvocations++;
     }
   }

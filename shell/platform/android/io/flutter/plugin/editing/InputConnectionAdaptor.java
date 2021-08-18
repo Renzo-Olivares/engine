@@ -291,6 +291,7 @@ class InputConnectionAdaptor extends BaseInputConnection
   }
 
   public boolean handleKeyEvent(KeyEvent event) {
+    Log.e("DELTAS", "handleKeyEvent");
     if (event.getAction() == KeyEvent.ACTION_DOWN) {
       if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
         return handleHorizontalMovement(true, event.isShiftPressed());
