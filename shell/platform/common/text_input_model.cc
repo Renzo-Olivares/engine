@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <codecvt>
+#include <iostream>
 #include <locale>
 
 #if defined(_MSC_VER)
@@ -135,6 +136,10 @@ void TextInputModel::AddText(const std::u16string& text) {
     composing_range_.set_end(composing_range_.start() + text.length());
   }
   size_t position = selection_.position();
+  std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>
+      utf16_converter;
+  std::cout << "Inserting: " << utf16_converter.to_bytes(text)
+            << " at index: " << position << std::endl;
   text_.insert(position, text);
   selection_ = TextRange(position + text.length());
 }
@@ -164,6 +169,7 @@ bool TextInputModel::Backspace() {
 }
 
 bool TextInputModel::Delete() {
+  // TODO: Log diff.
   if (DeleteSelected()) {
     return true;
   }
@@ -181,6 +187,7 @@ bool TextInputModel::Delete() {
 }
 
 bool TextInputModel::DeleteSurrounding(int offset_from_cursor, int count) {
+  // TODO: Log diff.
   size_t max_pos = editable_range().end();
   size_t start = selection_.extent();
   if (offset_from_cursor < 0) {

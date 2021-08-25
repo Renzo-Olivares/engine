@@ -1221,6 +1221,11 @@ public class InputConnectionAdaptorTest {
     public int selectionEnd;
     public int composingStart;
     public int composingEnd;
+    public String oldText;
+    public String deltaText;
+    public String diffType;
+    public int deltaStart;
+    public int deltaEnd;
     public int updateEditingStateInvocations = 0;
 
     @Override

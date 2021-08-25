@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js_util' as js_util;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -913,6 +914,10 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
+    activeDomElement.addEventListener('beforeinput', (event) {
+      print('beforeinput delta: ' + js_util.getProperty(event, 'data').toString() + ' delta length: ' + js_util.getProperty(event, 'data').toString().length.toString());
+    });
+
     // Refocus on the activeDomElement after blur, so that user can keep editing the
     // text field.
     subscriptions.add(activeDomElement.onBlur.listen((_) {
@@ -1687,6 +1692,7 @@ class TextEditingChannel {
 
   /// Sends the 'TextInputClient.updateEditingState' message to the framework.
   void updateEditingState(int? clientId, EditingState? editingState) {
+    // print('hello from web engine updateEditingState');
     EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
       'flutter/textinput',
       const JSONMethodCodec().encodeMethodCall(
@@ -1795,6 +1801,7 @@ class HybridTextEditing {
     strategy.enable(
       configuration!,
       onChange: (EditingState? editingState) {
+        // print('onChange ' + editingState!.text!);
         channel.updateEditingState(_clientId, editingState);
       },
       onAction: (String? inputAction) {

@@ -324,6 +324,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
 }
 
 - (void)updateEditState {
+  NSLog(@"updateEditState");
   if (_activeModel == nullptr) {
     return;
   }
@@ -350,6 +351,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
 }
 
 - (void)updateTextAndSelection {
+  NSLog(@"updateTextAndSelection");
   NSAssert(_activeModel != nullptr, @"Flutter text model must not be null.");
   NSString* text = @(_activeModel->GetText().data());
   int start = _activeModel->selection().base();
@@ -381,6 +383,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
  * processing of the same keys.
  */
 - (BOOL)handleKeyEvent:(NSEvent*)event {
+  NSLog(@"handleKeyEvent");
   if (event.type == NSEventTypeKeyUp ||
       (event.type == NSEventTypeFlagsChanged && event.modifierFlags < _previouslyPressedFlags)) {
     return NO;
@@ -404,6 +407,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
 }
 
 - (BOOL)performKeyEquivalent:(NSEvent*)event {
+  NSLog(@"performKeyEquivalent");
   return [self.flutterViewController performKeyEquivalent:event];
 }
 
@@ -512,6 +516,7 @@ static flutter::TextRange RangeFromBaseExtent(NSNumber* base,
 - (void)setMarkedText:(id)string
         selectedRange:(NSRange)selectedRange
      replacementRange:(NSRange)replacementRange {
+  NSLog(@"setMarkedText");
   if (_activeModel == nullptr) {
     return;
   }

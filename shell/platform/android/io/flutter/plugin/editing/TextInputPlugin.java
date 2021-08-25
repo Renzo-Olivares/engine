@@ -465,6 +465,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   // latest TextEditState from the framework.
   @VisibleForTesting
   void setTextInputEditingState(View view, TextInputChannel.TextEditState state) {
+    Log.e("DELTAS", "RECEIVING FROM FRAMEWORK");
     if (!mRestartInputPending
         && mLastKnownFrameworkTextEditingState != null
         && mLastKnownFrameworkTextEditingState.hasComposing()) {
@@ -624,6 +625,13 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
     final int selectionEnd = mEditable.getSelectionEnd();
     final int composingStart = mEditable.getComposingStart();
     final int composingEnd = mEditable.getComposingEnd();
+
+    // Deltas
+    final String oldText = mEditable.getOldText();
+    final String newText = mEditable.getDeltaText();
+    final String deltaType = mEditable.getDeltaType();
+    final int newStart = mEditable.getDeltaStart();
+    final int newEnd = mEditable.getDeltaEnd();
     final boolean skipFrameworkUpdate =
         // The framework needs to send its editing state first.
         mLastKnownFrameworkTextEditingState == null
@@ -634,6 +642,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
                 && composingEnd == mLastKnownFrameworkTextEditingState.composingEnd);
     if (!skipFrameworkUpdate) {
       Log.v(TAG, "send EditingState to flutter: " + mEditable.toString());
+      Log.e("DELTAS", "send EditingState to flutter: " + mEditable.toString());
       textInputChannel.updateEditingState(
           inputTarget.id,
           mEditable.toString(),
@@ -641,6 +650,9 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
           selectionEnd,
           composingStart,
           composingEnd);
+      textInputChannel.updateEditingStateWithDelta(
+          inputTarget.id, oldText, newText, deltaType, newStart, newEnd);
+      // TODO: Update TextEditState with deltas?
       mLastKnownFrameworkTextEditingState =
           new TextEditState(
               mEditable.toString(), selectionStart, selectionEnd, composingStart, composingEnd);
