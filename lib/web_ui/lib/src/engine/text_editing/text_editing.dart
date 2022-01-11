@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:html' as html;
+import 'dart:js_util' as js_util;
 import 'dart:math' as math;
 import 'dart:typed_data';
 
@@ -440,6 +441,147 @@ class AutofillInfo {
   }
 }
 
+/// Replaces a range of text in the original string with the text given in the
+/// replacement string.
+String _replace(String originalText, String replacementText, int start, int end) {
+  final String textStart = originalText.substring(0, start);
+  final String textEnd = originalText.substring(end, originalText.length);
+  final String newText = textStart + replacementText + textEnd;
+  return newText;
+}
+
+class TextEditingDeltaState {
+  const TextEditingDeltaState({
+    this.oldText = '',
+    this.deltaText = '',
+    this.deltaStart = -1,
+    this.deltaEnd = -1,
+    this.baseOffset = -1,
+    this.extentOffset = -1,
+    this.composingOffset = -1,
+    this.composingExtent = -1,
+  });
+
+  static TextEditingDeltaState inferDeltaState(EditingState newEditingState, EditingState? lastEditingState, TextEditingDeltaState? lastTextEditingDeltaState) {
+    TextEditingDeltaState newTextEditingDeltaState = lastTextEditingDeltaState ?? TextEditingDeltaState(oldText: lastEditingState!.text!);
+
+    final bool previousSelectionWasCollapsed = lastEditingState?.baseOffset == lastEditingState?.extentOffset;
+
+    if (newTextEditingDeltaState.deltaText.isEmpty && newTextEditingDeltaState.deltaEnd != -1) {
+      // We are removing text.
+      final int deletedLength = newTextEditingDeltaState.oldText.length - newEditingState.text!.length;
+      newTextEditingDeltaState = newTextEditingDeltaState.copyWith(deltaStart: newTextEditingDeltaState.deltaEnd - deletedLength);
+    } else if (newTextEditingDeltaState.deltaText.isNotEmpty && !previousSelectionWasCollapsed) {
+      // We are replacing text at a selection.
+      newTextEditingDeltaState = newTextEditingDeltaState.copyWith(deltaStart: lastEditingState!.baseOffset);
+    }
+
+    // If we are composing then set the delta range to the composing region we
+    // captured in compositionupdate.
+    final bool isCurrentlyComposing = newTextEditingDeltaState.composingOffset != -1 && newTextEditingDeltaState.composingOffset != newTextEditingDeltaState.composingExtent;
+    if (newTextEditingDeltaState.deltaText.isNotEmpty && previousSelectionWasCollapsed && isCurrentlyComposing) {
+      newTextEditingDeltaState = newTextEditingDeltaState.copyWith(deltaStart: newTextEditingDeltaState.composingOffset, deltaEnd: newTextEditingDeltaState.composingExtent);
+    }
+
+    final bool isDeltaRangeEmpty = newTextEditingDeltaState.deltaStart == -1 && newTextEditingDeltaState.deltaStart == newTextEditingDeltaState.deltaEnd;
+    if (!isDeltaRangeEmpty) {
+      // To verify the range of our delta we should compare the newEditingState's
+      // text with the delta applied to the oldText. If they differ then capture
+      // the correct delta range from the newEditingState's text value.
+      //
+      // We can assume the deltaText for additions and replacements to the text value
+      // are accurate. What may not be accurate is the range of the delta.
+      //
+      // We can think of the newEditingState as our source of truth.
+      final String textAfterDelta = _replace(
+          newTextEditingDeltaState.oldText, newTextEditingDeltaState.deltaText,
+          newTextEditingDeltaState.deltaStart,
+          newTextEditingDeltaState.deltaEnd);
+      final bool isDeltaVerified = textAfterDelta == newEditingState.text!;
+
+      if (!isDeltaVerified) {
+        // 1. Find all matches for deltaText.
+        // 2. Apply matches/replacement to oldText until oldText matches the
+        // new editing state's text value.
+        final RegExp deltaTextPattern = RegExp(r'' + newTextEditingDeltaState.deltaText + r'');
+        for (final Match match in deltaTextPattern.allMatches(newEditingState.text!)) {
+          String textAfterMatch;
+          int actualEnd;
+          final bool isMatchWithinOldTextBounds = match.start >= 0 && match.end <= newTextEditingDeltaState.oldText.length;
+          if (!isMatchWithinOldTextBounds) {
+            actualEnd = match.start + newTextEditingDeltaState.deltaText.length - 1;
+            textAfterMatch = _replace(
+              newTextEditingDeltaState.oldText,
+              newTextEditingDeltaState.deltaText,
+              match.start,
+              actualEnd,
+            );
+          } else {
+            actualEnd = match.end;
+            textAfterMatch = _replace(
+              newTextEditingDeltaState.oldText,
+              newTextEditingDeltaState.deltaText,
+              match.start,
+              actualEnd,
+            );
+          }
+
+          if (textAfterMatch == newEditingState.text!) {
+            newTextEditingDeltaState = newTextEditingDeltaState.copyWith(deltaStart: match.start, deltaEnd: actualEnd);
+            break;
+          }
+        }
+      }
+    }
+
+    return newTextEditingDeltaState;
+  }
+
+  final String oldText;
+  final String deltaText;
+  final int deltaStart;
+  final int deltaEnd;
+  final int baseOffset;
+  final int extentOffset;
+  final int composingOffset;
+  final int composingExtent;
+
+  Map<String, dynamic> toFlutter() => <String, dynamic>{
+    'batchDeltas': <Map<String, dynamic>>[
+      <String, dynamic>{
+        'oldText': oldText,
+        'deltaText': deltaText,
+        'deltaStart': deltaStart,
+        'deltaEnd': deltaEnd,
+        'selectionBase': baseOffset,
+        'selectionExtent': extentOffset,
+      },
+    ],
+  };
+
+  TextEditingDeltaState copyWith({
+    String? oldText,
+    String? deltaText,
+    int? deltaStart,
+    int? deltaEnd,
+    int? baseOffset,
+    int? extentOffset,
+    int? composingOffset,
+    int? composingExtent,
+  }) {
+    return TextEditingDeltaState(
+      oldText: oldText ?? this.oldText,
+      deltaText: deltaText ?? this.deltaText,
+      deltaStart: deltaStart ?? this.deltaStart,
+      deltaEnd: deltaEnd ?? this.deltaEnd,
+      baseOffset: baseOffset ?? this.baseOffset,
+      extentOffset: extentOffset ?? this.extentOffset,
+      composingOffset: composingOffset ?? this.composingOffset,
+      composingExtent: composingExtent ?? this.composingExtent,
+    );
+  }
+}
+
 /// The current text and selection state of a text field.
 class EditingState {
   EditingState({this.text, int? baseOffset, int? extentOffset}) :
@@ -611,6 +753,7 @@ class InputConfiguration {
         const TextCapitalizationConfig.defaultCapitalization(),
     this.autofill,
     this.autofillGroup,
+    this.enableDeltaModel = false,
   });
 
   InputConfiguration.fromFrameworkMessage(
@@ -634,7 +777,8 @@ class InputConfiguration {
         autofillGroup = EngineAutofillForm.fromFrameworkMessage(
           flutterInputConfiguration.tryJson('autofill'),
           flutterInputConfiguration.tryList('fields'),
-        );
+        ),
+        enableDeltaModel = flutterInputConfiguration.tryBool('enableDeltaModel') ?? false;
 
   /// The type of information being edited in the input control.
   final EngineInputType inputType;
@@ -659,6 +803,8 @@ class InputConfiguration {
   /// supported by Safari.
   final bool autocorrect;
 
+  final bool enableDeltaModel;
+
   final AutofillInfo? autofill;
 
   final EngineAutofillForm? autofillGroup;
@@ -666,7 +812,7 @@ class InputConfiguration {
   final TextCapitalizationConfig textCapitalization;
 }
 
-typedef OnChangeCallback = void Function(EditingState? editingState);
+typedef OnChangeCallback = void Function(EditingState? editingState, TextEditingDeltaState? editingDeltaState);
 typedef OnActionCallback = void Function(String? inputAction);
 
 /// Provides HTML DOM functionality for editable text.
@@ -850,6 +996,8 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
   late InputConfiguration inputConfiguration;
   EditingState? lastEditingState;
 
+  TextEditingDeltaState? lastTextEditingDeltaState;
+
   /// Styles associated with the editable text.
   EditableTextStyle? style;
 
@@ -948,6 +1096,10 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
+    activeDomElement.addEventListener('beforeinput', handleBeforeInput);
+
+    activeDomElement.addEventListener('compositionupdate', handleCompositionUpdate);
+
     // Refocus on the activeDomElement after blur, so that user can keep editing the
     // text field.
     subscriptions.add(activeDomElement.onBlur.listen((_) {
@@ -979,6 +1131,7 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
 
     isEnabled = false;
     lastEditingState = null;
+    lastTextEditingDeltaState = null;
     style = null;
     geometry = null;
 
@@ -1023,11 +1176,41 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
     assert(isEnabled);
 
     final EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
+    TextEditingDeltaState? newTextEditingDeltaState;
+    if (inputConfiguration.enableDeltaModel) {
+      newTextEditingDeltaState = TextEditingDeltaState.inferDeltaState(newEditingState, lastEditingState, lastTextEditingDeltaState);
+    }
 
     if (newEditingState != lastEditingState) {
       lastEditingState = newEditingState;
-      onChange!(lastEditingState);
+      lastTextEditingDeltaState = newTextEditingDeltaState;
+      onChange!(lastEditingState, lastTextEditingDeltaState);
+      // Flush delta after it has been sent to framework.
+      lastTextEditingDeltaState = TextEditingDeltaState(oldText: lastEditingState!.text!);
     }
+  }
+
+  void handleBeforeInput(html.Event event) {
+    final String eventData = js_util.getProperty(event, 'data').toString();
+    final TextEditingDeltaState newDeltaState = lastTextEditingDeltaState ?? TextEditingDeltaState(oldText: lastEditingState!.text!);
+
+    if (eventData == 'null') {
+      // When event.data is 'null' we have a deletion.
+      // The deltaStart is set in handleChange because there is where we get access
+      // to the new selection baseOffset which is our new deltaStart.
+      lastTextEditingDeltaState = newDeltaState.copyWith(oldText: lastEditingState!.text, deltaText: '', deltaEnd: lastEditingState!.extentOffset);
+    } else {
+      // When event.data is not 'null' we we will begin by considering this delta as an insertion
+      // at the selection extentOffset. This may change due to logic in handleChange to handle
+      // composition and other IME behaviors.
+      lastTextEditingDeltaState = newDeltaState.copyWith(oldText: lastEditingState!.text, deltaText: eventData, deltaStart: lastEditingState!.extentOffset, deltaEnd: lastEditingState!.extentOffset);
+    }
+  }
+
+  void handleCompositionUpdate(html.Event event) {
+    final EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
+    final TextEditingDeltaState newDeltaState = lastTextEditingDeltaState ?? TextEditingDeltaState(oldText: lastEditingState!.text!);
+    lastTextEditingDeltaState = newDeltaState.copyWith(composingOffset: newEditingState.baseOffset, composingExtent: newEditingState.extentOffset);
   }
 
   void maybeSendAction(html.Event event) {
@@ -1170,6 +1353,10 @@ class IOSTextEditingStrategy extends GloballyPositionedTextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
+    activeDomElement.addEventListener('beforeinput', handleBeforeInput);
+
+    activeDomElement.addEventListener('compositionupdate', handleCompositionUpdate);
+
     // Position the DOM element after it is focused.
     subscriptions.add(activeDomElement.onFocus.listen((_) {
       // Cancel previous timer if exists.
@@ -1301,6 +1488,10 @@ class AndroidTextEditingStrategy extends GloballyPositionedTextEditingStrategy {
 
     subscriptions.add(html.document.onSelectionChange.listen(handleChange));
 
+    activeDomElement.addEventListener('beforeinput', handleBeforeInput);
+
+    activeDomElement.addEventListener('compositionupdate', handleCompositionUpdate);
+
     subscriptions.add(activeDomElement.onBlur.listen((_) {
       if (windowHasFocus) {
         // Chrome on Android will hide the onscreen keyboard when you tap outside
@@ -1352,6 +1543,10 @@ class FirefoxTextEditingStrategy extends GloballyPositionedTextEditingStrategy {
     subscriptions.add(activeDomElement.onInput.listen(handleChange));
 
     subscriptions.add(activeDomElement.onKeyDown.listen(maybeSendAction));
+
+    activeDomElement.addEventListener('beforeinput', handleBeforeInput);
+
+    activeDomElement.addEventListener('compositionupdate', handleCompositionUpdate);
 
     // Detects changes in text selection.
     //
@@ -1732,6 +1927,20 @@ class TextEditingChannel {
     );
   }
 
+  /// Sends the 'TextInputClient.updateEditingStateWithDeltas' message to the framework.
+  void updateEditingStateWithDelta(int? clientId, TextEditingDeltaState? editingDeltaState) {
+    EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
+      'flutter/textinput',
+      const JSONMethodCodec().encodeMethodCall(
+        MethodCall('TextInputClient.updateEditingStateWithDeltas', <dynamic>[
+          clientId,
+          editingDeltaState!.toFlutter(),
+        ]),
+      ),
+      _emptyCallback,
+    );
+  }
+
   /// Sends the 'TextInputClient.performAction' message to the framework.
   void performAction(int? clientId, String? inputAction) {
     EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
@@ -1825,8 +2034,13 @@ class HybridTextEditing {
     isEditing = true;
     strategy.enable(
       configuration!,
-      onChange: (EditingState? editingState) {
-        channel.updateEditingState(_clientId, editingState);
+      onChange: (EditingState? editingState, TextEditingDeltaState? editingDeltaState) {
+        if (configuration!.enableDeltaModel) {
+          editingDeltaState = editingDeltaState!.copyWith(baseOffset: editingState!.baseOffset, extentOffset: editingState.extentOffset);
+          channel.updateEditingStateWithDelta(_clientId, editingDeltaState);
+        } else {
+          channel.updateEditingState(_clientId, editingState);
+        }
       },
       onAction: (String? inputAction) {
         channel.performAction(_clientId, inputAction);
