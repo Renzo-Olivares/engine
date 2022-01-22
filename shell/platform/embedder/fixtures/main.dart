@@ -7,7 +7,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:ffi';
+import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
