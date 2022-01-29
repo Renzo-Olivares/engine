@@ -486,6 +486,7 @@ class TextEditingDeltaState {
   /// when applied to the last editing state. If it is not then we use our new editing state as the source of truth,
   /// and use regex to find the correct deltaStart and deltaEnd.
   static TextEditingDeltaState inferDeltaState(EditingState newEditingState, EditingState? lastEditingState, TextEditingDeltaState lastTextEditingDeltaState) {
+    print('hello from inferDeltaState');
     final TextEditingDeltaState newTextEditingDeltaState = lastTextEditingDeltaState.copyWith();
     final bool previousSelectionWasCollapsed = lastEditingState?.baseOffset == lastEditingState?.extentOffset;
 
@@ -494,6 +495,7 @@ class TextEditingDeltaState {
       // When text is deleted outside of the composing region or is cut using the native toolbar,
       // we calculate the length of the deleted text by comparing the new and old editing state lengths.
       // This value is then subtracted from the end position of the delta to capture the deleted range.
+      print('hello from inferDeltaState - deletion');
       final int deletedLength = newTextEditingDeltaState.oldText.length - newEditingState.text!.length;
       newTextEditingDeltaState.deltaStart = newTextEditingDeltaState.deltaEnd - deletedLength;
     } else if (newTextEditingDeltaState.deltaText.isNotEmpty && !previousSelectionWasCollapsed) {
@@ -501,12 +503,14 @@ class TextEditingDeltaState {
       // When a selection of text is replaced by a copy/paste operation we set the starting range
       // of the delta to be the beginning of the selection of the previous editing state.
       newTextEditingDeltaState.deltaStart = lastEditingState!.baseOffset!;
+      print('hello from inferDeltaState - selection replacement');
     }
 
     // If we are composing then set the delta range to the composing region we
     // captured in compositionupdate.
     final bool isCurrentlyComposing = newTextEditingDeltaState.composingOffset != -1 && newTextEditingDeltaState.composingOffset != newTextEditingDeltaState.composingExtent;
     if (newTextEditingDeltaState.deltaText.isNotEmpty && previousSelectionWasCollapsed && isCurrentlyComposing) {
+      print('hello from inferDeltaState - composing');
       newTextEditingDeltaState.deltaStart = newTextEditingDeltaState.composingOffset;
       newTextEditingDeltaState.deltaEnd = newTextEditingDeltaState.composingExtent;
     }
@@ -521,22 +525,33 @@ class TextEditingDeltaState {
       // are accurate. What may not be accurate is the range of the delta.
       //
       // We can think of the newEditingState as our source of truth.
+      print('hello from inferDeltaState - delta verification');
       final ui.TextRange replacementRange = ui.TextRange(start: newTextEditingDeltaState.deltaStart, end: newTextEditingDeltaState.deltaEnd);
       final String textAfterDelta = _replace(
           newTextEditingDeltaState.oldText, newTextEditingDeltaState.deltaText,
           replacementRange);
       final bool isDeltaVerified = textAfterDelta == newEditingState.text!;
+      print('hello from inferDeltaState - textAfterDelta: ' + textAfterDelta);
+      print('hello from inferDeltaState - source of truth: ' + newEditingState.text!);
 
       if (!isDeltaVerified) {
+        print('hello from inferDeltaState - delta is not verified constructing new delta');
+        print('hello from inferDeltaState - deltaText: ' + newTextEditingDeltaState.deltaText + ' length: ' + newTextEditingDeltaState.deltaText.length.toString());
         // 1. Find all matches for deltaText.
         // 2. Apply matches/replacement to oldText until oldText matches the
         // new editing state's text value.
         final RegExp deltaTextPattern = RegExp(r'' + newTextEditingDeltaState.deltaText + r'');
         for (final Match match in deltaTextPattern.allMatches(newEditingState.text!)) {
+          print('hello from inferDeltaState - processing regex matches');
+          print('hello from inferDeltaState - pattern: ' + match.pattern.toString());
+          print('hello from inferDeltaState - matched word: ' + match.group(0)!);
+          print('hello from inferDeltaState - matched start: ' + match.start.toString());
+          print('hello from inferDeltaState - matched end: ' + match.end.toString());
           String textAfterMatch;
           int actualEnd;
           final bool isMatchWithinOldTextBounds = match.start >= 0 && match.end <= newTextEditingDeltaState.oldText.length;
           if (!isMatchWithinOldTextBounds) {
+            print('hello from inferDeltaState - not within old text bounds');
             actualEnd = match.start + newTextEditingDeltaState.deltaText.length - 1;
             textAfterMatch = _replace(
               newTextEditingDeltaState.oldText,
@@ -547,7 +562,8 @@ class TextEditingDeltaState {
               ),
             );
           } else {
-            actualEnd = match.end;
+            print('hello from inferDeltaState - within old text bounds');
+            actualEnd = match.end - 1;
             textAfterMatch = _replace(
               newTextEditingDeltaState.oldText,
               newTextEditingDeltaState.deltaText,
@@ -561,12 +577,14 @@ class TextEditingDeltaState {
           if (textAfterMatch == newEditingState.text!) {
             newTextEditingDeltaState.deltaStart = match.start;
             newTextEditingDeltaState.deltaEnd = actualEnd;
+            print('hello from inferDeltaState - delta constructed and verified');
             break;
           }
         }
       }
     }
 
+    print('hello from inferDeltaState - updating selection & end of inference');
     // Update selection of the delta using information from the new editing state.
     newTextEditingDeltaState.baseOffset = newEditingState.baseOffset!;
     newTextEditingDeltaState.extentOffset = newEditingState.extentOffset!;
@@ -1237,6 +1255,8 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
   void handleChange(html.Event event) {
     assert(isEnabled);
 
+    print('hello from handleChange');
+
     final EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
     TextEditingDeltaState? newTextEditingDeltaState;
     if (inputConfiguration.enableDeltaModel) {
@@ -1248,6 +1268,7 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
       _editingDeltaState = newTextEditingDeltaState;
       onChange!(lastEditingState, _editingDeltaState);
       // Flush delta after it has been sent to framework.
+      print('hello from handleChange - flushing delta');
       _editingDeltaState = null;
     }
   }
@@ -1263,6 +1284,7 @@ abstract class DefaultTextEditingStrategy implements TextEditingStrategy {
     // text update delta.
     final String? eventData = getJsProperty<void>(event, 'data') as String?;
     final String? inputType = getJsProperty<void>(event, 'inputType') as String?;
+    print('hello from handleBeforeInput');
 
     if (inputType != null) {
       if (inputType.contains('delete')) {
@@ -2114,6 +2136,7 @@ class HybridTextEditing {
     strategy.enable(
       configuration!,
       onChange: (EditingState? editingState, TextEditingDeltaState? editingDeltaState) {
+        print('hello from onChange');
         if (configuration!.enableDeltaModel) {
           channel.updateEditingStateWithDelta(_clientId, editingDeltaState);
         } else {
