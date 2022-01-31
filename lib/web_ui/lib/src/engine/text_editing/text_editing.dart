@@ -533,14 +533,15 @@ class TextEditingDeltaState {
       final bool isDeltaVerified = textAfterDelta == newEditingState.text!;
       print('hello from inferDeltaState - textAfterDelta: ' + textAfterDelta);
       print('hello from inferDeltaState - source of truth: ' + newEditingState.text!);
+      print('hello from inferDeltaState - deltaText: ' + newTextEditingDeltaState.deltaText + ' length: ' + newTextEditingDeltaState.deltaText.length.toString());
 
       if (!isDeltaVerified) {
         print('hello from inferDeltaState - delta is not verified constructing new delta');
-        print('hello from inferDeltaState - deltaText: ' + newTextEditingDeltaState.deltaText + ' length: ' + newTextEditingDeltaState.deltaText.length.toString());
+        // print('hello from inferDeltaState - deltaText: ' + newTextEditingDeltaState.deltaText + ' length: ' + newTextEditingDeltaState.deltaText.length.toString());
         // 1. Find all matches for deltaText.
         // 2. Apply matches/replacement to oldText until oldText matches the
         // new editing state's text value.
-        final bool isPeriodInsertion = newTextEditingDeltaState.deltaText == '. ';
+        final bool isPeriodInsertion = newTextEditingDeltaState.deltaText.contains('.');
         final RegExp deltaTextPattern = isPeriodInsertion?
                                         RegExp(r'\' + newTextEditingDeltaState.deltaText + r'')
                                             : RegExp(r'' + newTextEditingDeltaState.deltaText + r'');
