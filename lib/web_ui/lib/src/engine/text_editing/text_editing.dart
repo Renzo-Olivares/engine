@@ -540,7 +540,11 @@ class TextEditingDeltaState {
         // 1. Find all matches for deltaText.
         // 2. Apply matches/replacement to oldText until oldText matches the
         // new editing state's text value.
-        final RegExp deltaTextPattern = RegExp(r'' + newTextEditingDeltaState.deltaText + r'');
+        final bool isPeriodInsertion = newTextEditingDeltaState.deltaText == '. ';
+        final RegExp deltaTextPattern = isPeriodInsertion?
+                                        RegExp(r'\' + newTextEditingDeltaState.deltaText + r'')
+                                            : RegExp(r'' + newTextEditingDeltaState.deltaText + r'');
+
         for (final Match match in deltaTextPattern.allMatches(newEditingState.text!)) {
           print('hello from inferDeltaState - processing regex matches');
           print('hello from inferDeltaState - pattern: ' + match.pattern.toString());
@@ -563,7 +567,7 @@ class TextEditingDeltaState {
             );
           } else {
             print('hello from inferDeltaState - within old text bounds');
-            actualEnd = match.end - 1;
+            actualEnd = isPeriodInsertion? match.end - 1 : match.end;
             textAfterMatch = _replace(
               newTextEditingDeltaState.oldText,
               newTextEditingDeltaState.deltaText,
