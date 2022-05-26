@@ -19,9 +19,15 @@ void main() {
   internalBootstrapBrowserTest(() => testMain);
 }
 
-class MockWithCompositionAwareMixin with CompositionAwareMixin {}
+class _MockWithCompositionAwareMixin with CompositionAwareMixin {
+  // These variables should be equal to their counterparts in CompositionAwareMixin.
+  // Seperate so the counterparts in CompositionAwareMixin can be private.
+  static const String _kCompositionUpdate = 'compositionupdate';
+  static const String _kCompositionStart = 'compositionstart';
+  static const String _kCompositionEnd = 'compositionend';
+}
 
-html.InputElement get inputElement {
+html.InputElement get _inputElement {
   return defaultTextEditingRoot.querySelectorAll('input').first as html.InputElement;
 }
 
@@ -51,12 +57,12 @@ Future<void> testMain() async {
   group('$CompositionAwareMixin', () {
     group('composition end', () {
       test('should reset composing text on handle composition end', () {
-        final MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
-            MockWithCompositionAwareMixin();
+        final _MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
+            _MockWithCompositionAwareMixin();
         mockWithCompositionAwareMixin.composingText = fakeComposingText;
-        mockWithCompositionAwareMixin.addCompositionEventHandlers(inputElement);
+        mockWithCompositionAwareMixin.addCompositionEventHandlers(_inputElement);
 
-        inputElement.dispatchEvent(html.Event(CompositionAwareMixin.kCompositionEnd));
+        _inputElement.dispatchEvent(html.Event(_MockWithCompositionAwareMixin._kCompositionEnd));
 
         expect(mockWithCompositionAwareMixin.composingText, null);
       });
@@ -64,12 +70,12 @@ Future<void> testMain() async {
 
     group('composition start', () {
       test('should reset composing text on handle composition start', () {
-        final MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
-            MockWithCompositionAwareMixin();
+        final _MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
+            _MockWithCompositionAwareMixin();
         mockWithCompositionAwareMixin.composingText = fakeComposingText;
-        mockWithCompositionAwareMixin.addCompositionEventHandlers(inputElement);
+        mockWithCompositionAwareMixin.addCompositionEventHandlers(_inputElement);
 
-        inputElement.dispatchEvent(html.Event(CompositionAwareMixin.kCompositionStart));
+        _inputElement.dispatchEvent(html.Event(_MockWithCompositionAwareMixin._kCompositionStart));
 
         expect(mockWithCompositionAwareMixin.composingText, null);
       });
@@ -78,13 +84,12 @@ Future<void> testMain() async {
     group('composition update', () {
       test('should set composing text to event composing text', () {
         const String fakeEventText = 'IAmComposingThis';
-        final MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
-            MockWithCompositionAwareMixin();
+        final _MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
+            _MockWithCompositionAwareMixin();
         mockWithCompositionAwareMixin.composingText = fakeComposingText;
-        mockWithCompositionAwareMixin.addCompositionEventHandlers(inputElement);
+        mockWithCompositionAwareMixin.addCompositionEventHandlers(_inputElement);
 
-        inputElement.dispatchEvent(
-            html.CompositionEvent(CompositionAwareMixin.kCompositionUpdate, data: fakeEventText));
+        _inputElement.dispatchEvent(html.CompositionEvent(_MockWithCompositionAwareMixin._kCompositionUpdate, data: fakeEventText));
 
         expect(mockWithCompositionAwareMixin.composingText, fakeEventText);
       });
@@ -101,8 +106,8 @@ Future<void> testMain() async {
           baseOffset: baseOffset,
         );
 
-        final MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
-            MockWithCompositionAwareMixin();
+        final _MockWithCompositionAwareMixin mockWithCompositionAwareMixin =
+            _MockWithCompositionAwareMixin();
         mockWithCompositionAwareMixin.composingText = composingText;
 
         const int expectedComposingBase = baseOffset - composingText.length;
@@ -111,7 +116,9 @@ Future<void> testMain() async {
             mockWithCompositionAwareMixin.determineCompositionState(editingState),
             editingState.copyWith(
                 composingBaseOffset: expectedComposingBase,
-                composingExtentOffset: expectedComposingBase + composingText.length));
+                composingExtentOffset: expectedComposingBase + composingText.length
+              )
+          );
       });
     });
   });
@@ -120,12 +127,11 @@ Future<void> testMain() async {
     test('should be [0, compostionStrLength] on new composition', () {
       const String composingText = 'hi';
 
-      inputElement.dispatchEvent(
-          html.CompositionEvent(CompositionAwareMixin.kCompositionUpdate, data: composingText));
+      _inputElement.dispatchEvent(html.CompositionEvent(_MockWithCompositionAwareMixin._kCompositionUpdate, data: composingText));
 
-      //set the selection text
-      inputElement.value = composingText;
-      inputElement.dispatchEvent(html.Event.eventType('Event', 'input'));
+      // Set the selection text.
+      _inputElement.value = composingText;
+      _inputElement.dispatchEvent(html.Event.eventType('Event', 'input'));
 
       expect(
           editingStrategy.lastEditingState,
@@ -133,7 +139,8 @@ Future<void> testMain() async {
               .having((EditingState editingState) => editingState.composingBaseOffset,
                   'composingBaseOffset', 0)
               .having((EditingState editingState) => editingState.composingExtentOffset,
-                  'composingExtentOffset', composingText.length));
+                  'composingExtentOffset', composingText.length)
+          );
     });
 
     test(
@@ -143,15 +150,15 @@ Future<void> testMain() async {
       const String beforeComposingText = 'beforeComposingText';
       const String afterComposingText = 'afterComposingText';
 
-      //type in the text box, then move cursor to the middle
-      inputElement.value = '$beforeComposingText$afterComposingText';
-      inputElement.setSelectionRange(beforeComposingText.length, beforeComposingText.length);
+      // Type in the text box, then move cursor to the middle.
+      _inputElement.value = '$beforeComposingText$afterComposingText';
+      _inputElement.setSelectionRange(beforeComposingText.length, beforeComposingText.length);
 
-      inputElement.dispatchEvent(
-          html.CompositionEvent(CompositionAwareMixin.kCompositionUpdate, data: composingText));
+      _inputElement.dispatchEvent(
+          html.CompositionEvent(_MockWithCompositionAwareMixin._kCompositionUpdate, data: composingText));
 
-      //flush editing state (since we did not compositionend)
-      inputElement.dispatchEvent(html.Event.eventType('Event', 'input'));
+      // Flush editing state (since we did not compositionend).
+      _inputElement.dispatchEvent(html.Event.eventType('Event', 'input'));
 
       expect(
           editingStrategy.lastEditingState,
@@ -159,7 +166,8 @@ Future<void> testMain() async {
               .having((EditingState editingState) => editingState.composingBaseOffset!,
                   'composingBaseOffset', beforeComposingText.length - composingText.length)
               .having((EditingState editingState) => editingState.composingExtentOffset,
-                  'composingExtentOffset', beforeComposingText.length));
+                  'composingExtentOffset', beforeComposingText.length)
+        );
     });
   });
 }
