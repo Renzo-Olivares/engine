@@ -509,7 +509,6 @@ class TextEditingDeltaState {
     final bool isCurrentlyComposing = newTextEditingDeltaState.composingOffset != null && newTextEditingDeltaState.composingOffset != newTextEditingDeltaState.composingExtent;
     if (newTextEditingDeltaState.deltaText.isNotEmpty && previousSelectionWasCollapsed && isCurrentlyComposing) {
       newTextEditingDeltaState.deltaStart = newTextEditingDeltaState.composingOffset!;
-      newTextEditingDeltaState.deltaEnd = newTextEditingDeltaState.composingExtent!;
     }
 
     final bool isDeltaRangeEmpty = newTextEditingDeltaState.deltaStart == -1 && newTextEditingDeltaState.deltaStart == newTextEditingDeltaState.deltaEnd;
@@ -619,6 +618,8 @@ class TextEditingDeltaState {
         'deltaEnd': deltaEnd,
         'selectionBase': baseOffset,
         'selectionExtent': extentOffset,
+        'composingBase': composingOffset,
+        'composingExtent': composingExtent,
       },
     ],
   };
@@ -1290,6 +1291,8 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
 
     EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
     newEditingState = determineCompositionState(newEditingState);
+    editingDeltaState.composingOffset = newEditingState.composingBaseOffset;
+    editingDeltaState.composingExtent = newEditingState.composingExtentOffset;
 
     TextEditingDeltaState? newTextEditingDeltaState;
     if (inputConfiguration.enableDeltaModel) {
