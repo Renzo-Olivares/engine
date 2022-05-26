@@ -504,7 +504,7 @@ class TextEditingDeltaState {
       newTextEditingDeltaState.deltaStart = lastEditingState!.baseOffset!;
     }
 
-    // If we are composing then set the delta range to the composing region we
+    // If we are composing then set the deltaStart to the start of the composing region we
     // captured in compositionupdate.
     final bool isCurrentlyComposing = newTextEditingDeltaState.composingOffset != null && newTextEditingDeltaState.composingOffset != newTextEditingDeltaState.composingExtent;
     if (newTextEditingDeltaState.deltaText.isNotEmpty && previousSelectionWasCollapsed && isCurrentlyComposing) {
@@ -1291,6 +1291,10 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
 
     EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
     newEditingState = determineCompositionState(newEditingState);
+
+    // Set composing region from newEditingState derived by CompositionAwareMixin.
+    // This is the composing region after compositionupdate has updated the editing state,
+    // i.e the updated composing region.
     editingDeltaState.composingOffset = newEditingState.composingBaseOffset;
     editingDeltaState.composingExtent = newEditingState.composingExtentOffset;
 
