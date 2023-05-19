@@ -105,6 +105,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private ExtractedText getExtractedText(ExtractedTextRequest request) {
+    Log.e("mylogs", "getExtractedText");
     mExtractedText.startOffset = 0;
     mExtractedText.partialStartOffset = -1;
     mExtractedText.partialEndOffset = -1;
@@ -118,6 +119,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private CursorAnchorInfo getCursorAnchorInfo() {
+    Log.e("mylogs", "getCursorAnchorInfo");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       return null;
     }
@@ -142,11 +144,13 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public Editable getEditable() {
+    Log.e("mylogs", "getEditable");
     return mEditable;
   }
 
   @Override
   public boolean beginBatchEdit() {
+    Log.e("mylogs", "beginBatchEdit");
     mEditable.beginBatchEdit();
     batchEditNestDepth += 1;
     return super.beginBatchEdit();
@@ -154,6 +158,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean endBatchEdit() {
+    Log.e("mylogs", "endBatchEdit");
     boolean result = super.endBatchEdit();
     batchEditNestDepth -= 1;
     mEditable.endBatchEdit();
@@ -162,12 +167,14 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean commitText(CharSequence text, int newCursorPosition) {
+    Log.e("mylogs", "commitText");
     final boolean result = super.commitText(text, newCursorPosition);
     return result;
   }
 
   @Override
   public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+    Log.e("mylogs", "deleteSurroundingText");
     if (mEditable.getSelectionStart() == -1) {
       return true;
     }
@@ -178,18 +185,21 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean deleteSurroundingTextInCodePoints(int beforeLength, int afterLength) {
+    Log.e("mylogs", "deleteSurroundingTextInCodePoints");
     boolean result = super.deleteSurroundingTextInCodePoints(beforeLength, afterLength);
     return result;
   }
 
   @Override
   public boolean setComposingRegion(int start, int end) {
+    Log.e("mylogs", "setComposingRegion");
     final boolean result = super.setComposingRegion(start, end);
     return result;
   }
 
   @Override
   public boolean setComposingText(CharSequence text, int newCursorPosition) {
+    Log.e("mylogs", "setComposingText");
     boolean result;
     beginBatchEdit();
     if (text.length() == 0) {
@@ -203,6 +213,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean finishComposingText() {
+    Log.e("mylogs", "finishComposingText");
     final boolean result = super.finishComposingText();
     return result;
   }
@@ -214,6 +225,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   // TODO(garyq): Implement a more feature complete version of getExtractedText
   @Override
   public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
+    Log.e("mylogs", "getExtractedText");
     final boolean textMonitor = (flags & GET_EXTRACTED_TEXT_MONITOR) != 0;
     if (textMonitor == (mExtractRequest == null)) {
       Log.d(TAG, "The input method toggled text monitoring " + (textMonitor ? "on" : "off"));
@@ -226,6 +238,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean requestCursorUpdates(int cursorUpdateMode) {
+    Log.e("mylogs", "requestCursorUpdates");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       return false;
     }
@@ -245,12 +258,14 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean clearMetaKeyStates(int states) {
+    Log.e("mylogs", "clearMetaKeyStates");
     boolean result = super.clearMetaKeyStates(states);
     return result;
   }
 
   @Override
   public void closeConnection() {
+    Log.e("mylogs", "closeConnection");
     super.closeConnection();
     mEditable.removeEditingStateListener(this);
     for (; batchEditNestDepth > 0; batchEditNestDepth--) {
@@ -260,6 +275,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean setSelection(int start, int end) {
+    Log.e("mylogs", "setSelection");
     beginBatchEdit();
     boolean result = super.setSelection(start, end);
     endBatchEdit();
@@ -269,6 +285,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   // Sanitizes the index to ensure the index is within the range of the
   // contents of editable.
   private static int clampIndexToEditable(int index, Editable editable) {
+    Log.e("mylogs", "clampIndexToEditable");
     int clamped = Math.max(0, Math.min(editable.length(), index));
     if (clamped != index) {
       Log.d(
@@ -425,6 +442,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean performContextMenuAction(int id) {
+    Log.e("mylogs", "performContextMenuAction");
     beginBatchEdit();
     final boolean result = doPerformContextMenuAction(id);
     endBatchEdit();
@@ -432,6 +450,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private boolean doPerformContextMenuAction(int id) {
+    Log.e("mylogs", "doPerformContextMenuAction");
     if (id == android.R.id.selectAll) {
       setSelection(0, mEditable.length());
       return true;
@@ -485,6 +504,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean performPrivateCommand(String action, Bundle data) {
+    Log.e("mylogs", "performPrivateCommand");
     textInputChannel.performPrivateCommand(mClient, action, data);
     return true;
   }
@@ -526,6 +546,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   @TargetApi(25)
   @RequiresApi(25)
   public boolean commitContent(InputContentInfo inputContentInfo, int flags, Bundle opts) {
+    Log.e("mylogs", "commitContent");
     // Ensure permission is granted.
     if (Build.VERSION.SDK_INT >= 25
         && (flags & InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0) {
@@ -576,6 +597,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   }
 
   private byte[] readStreamFully(InputStream is, int blocksize) {
+    Log.e("mylogs", "readStreamFully");
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
     byte[] buffer = new byte[blocksize];
@@ -595,6 +617,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
   @Override
   public void didChangeEditingState(
       boolean textChanged, boolean selectionChanged, boolean composingRegionChanged) {
+    Log.e("mylogs", "didChangeEditingState");
     // This method notifies the input method that the editing state has changed.
     // updateSelection is mandatory. updateExtractedText and updateCursorAnchorInfo
     // are on demand (if the input method set the correspoinding monitoring

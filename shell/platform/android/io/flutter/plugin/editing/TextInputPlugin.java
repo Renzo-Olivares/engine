@@ -168,16 +168,19 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   @NonNull
   public InputMethodManager getInputMethodManager() {
+    Log.e("mylogs", "getInputMethodManager");
     return mImm;
   }
 
   @VisibleForTesting
   Editable getEditable() {
+    Log.e("mylogs", "getEditable");
     return mEditable;
   }
 
   @VisibleForTesting
   ImeSyncDeferringInsetsCallback getImeSyncCallback() {
+    Log.e("mylogs", "getImeSyncCallback");
     return imeSyncCallback;
   }
 
@@ -195,6 +198,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
    * display to another.
    */
   public void lockPlatformViewInputConnection() {
+    Log.e("mylogs", "lockPlatformViewInputConnection");
     if (inputTarget.type == InputTarget.Type.VIRTUAL_DISPLAY_PLATFORM_VIEW) {
       isInputConnectionLocked = true;
     }
@@ -206,6 +210,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
    * <p>See also: @{link lockPlatformViewInputConnection}.
    */
   public void unlockPlatformViewInputConnection() {
+    Log.e("mylogs", "unlockPlatformViewInputConnection");
     if (inputTarget.type == InputTarget.Type.VIRTUAL_DISPLAY_PLATFORM_VIEW) {
       isInputConnectionLocked = false;
     }
@@ -218,6 +223,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
    */
   @SuppressLint("NewApi")
   public void destroy() {
+    Log.e("mylogs", "destroy");
     platformViewsController.detachTextInputPlugin();
     textInputChannel.setTextInputMethodHandler(null);
     notifyViewExited();
@@ -289,6 +295,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   @Nullable
   public InputConnection createInputConnection(
       @NonNull View view, @NonNull KeyboardManager keyboardManager, @NonNull EditorInfo outAttrs) {
+    Log.e("mylogs", "createInputConnection");
     if (inputTarget.type == InputTarget.Type.NO_TARGET) {
       lastInputConnection = null;
       return null;
@@ -358,6 +365,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   @Nullable
   public InputConnection getLastInputConnection() {
+    Log.e("mylogs", "getLastInputConnection");
     return lastInputConnection;
   }
 
@@ -368,6 +376,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
    * input connection.
    */
   public void clearPlatformViewClient(int platformViewId) {
+    Log.e("mylogs", "platformViewId");
     if ((inputTarget.type == InputTarget.Type.VIRTUAL_DISPLAY_PLATFORM_VIEW
             || inputTarget.type == InputTarget.Type.PHYSICAL_DISPLAY_PLATFORM_VIEW)
         && inputTarget.id == platformViewId) {
@@ -380,10 +389,12 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   public void sendTextInputAppPrivateCommand(@NonNull String action, @NonNull Bundle data) {
+    Log.e("mylogs", "sendTextInputAppPrivateCommand");
     mImm.sendAppPrivateCommand(mView, action, data);
   }
 
   private boolean canShowTextInput() {
+    Log.e("mylogs", "canShowTextInput");
     if (configuration == null || configuration.inputType == null) {
       return true;
     }
@@ -392,6 +403,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   @VisibleForTesting
   void showTextInput(View view) {
+    Log.e("mylogs", "showTextInput");
     if (canShowTextInput()) {
       view.requestFocus();
       mImm.showSoftInput(view, 0);
@@ -401,6 +413,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void hideTextInput(View view) {
+    Log.e("mylogs", "hideTextInput");
     notifyViewExited();
     // Note: when a virtual display is used, a race condition may lead to us hiding the keyboard
     // here just after a platform view has shown it.
@@ -413,6 +426,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   @VisibleForTesting
   void setTextInputClient(int client, TextInputChannel.Configuration configuration) {
+    Log.e("mylogs", "setTextInputClient");
     // Call notifyViewExited on the previous field.
     notifyViewExited();
     this.configuration = configuration;
@@ -437,6 +451,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void setPlatformViewTextInputClient(int platformViewId, boolean usesVirtualDisplay) {
+    Log.e("mylogs", "setPlatformViewTextInputClient");
     if (usesVirtualDisplay) {
       // We need to make sure that the Flutter view is focused so that no imm operations get short
       // circuited.
@@ -455,6 +470,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   private static boolean composingChanged(
       TextInputChannel.TextEditState before, TextInputChannel.TextEditState after) {
+    Log.e("mylogs", "composingChanged");
     final int composingRegionLength = before.composingEnd - before.composingStart;
     if (composingRegionLength != after.composingEnd - after.composingStart) {
       return true;
@@ -472,6 +488,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   // latest TextEditState from the framework.
   @VisibleForTesting
   void setTextInputEditingState(View view, TextInputChannel.TextEditState state) {
+    Log.e("mylogs", "setTextInputEditingState");
     if (!mRestartInputPending
         && mLastKnownFrameworkTextEditingState != null
         && mLastKnownFrameworkTextEditingState.hasComposing()) {
@@ -500,6 +517,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void saveEditableSizeAndTransform(double width, double height, double[] matrix) {
+    Log.e("mylogs", "saveEditableSizeAndTransform");
     final double[] minMax = new double[4]; // minX, maxX, minY, maxY.
     final boolean isAffine = matrix[3] == 0 && matrix[7] == 0 && matrix[15] == 1;
     minMax[0] = minMax[1] = matrix[12] / matrix[15]; // minX and maxX.
@@ -541,6 +559,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   @VisibleForTesting
   void clearTextInputClient() {
+    Log.e("mylogs", "clearTextInputClient");
     if (inputTarget.type == InputTarget.Type.VIRTUAL_DISPLAY_PLATFORM_VIEW) {
       // This only applies to platform views that use a virtual display.
       // Focus changes in the framework tree have no guarantees on the order focus nodes are
@@ -596,6 +615,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   // -------- Start: KeyboardManager Synchronous Responder -------
   public boolean handleKeyEvent(@NonNull KeyEvent keyEvent) {
+    Log.e("mylogs", "handleKeyEvent");
     if (!getInputMethodManager().isAcceptingText() || lastInputConnection == null) {
       return false;
     }
@@ -616,6 +636,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   @Override
   public void didChangeEditingState(
       boolean textChanged, boolean selectionChanged, boolean composingRegionChanged) {
+    Log.e("mylogs", "didChangeEditingState");
     if (textChanged) {
       // Notify the autofill manager of the value change.
       notifyValueChanged(mEditable.toString());
@@ -684,10 +705,12 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   // have changed. However if the value of an unfocused EditableText is changed in the framework,
   // such change will not be sent to the text input plugin until the next TextInput.attach call.
   private boolean needsAutofill() {
+    Log.e("mylogs", "needsAutofill");
     return autofillConfiguration != null;
   }
 
   private void notifyViewEntered() {
+    Log.e("mylogs", "notifyViewEntered");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || afm == null || !needsAutofill()) {
       return;
     }
@@ -701,6 +724,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void notifyViewExited() {
+    Log.e("mylogs", "notifyViewExited");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
         || afm == null
         || configuration == null
@@ -714,6 +738,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void notifyValueChanged(String newValue) {
+    Log.e("mylogs", "notifyValueChanged");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || afm == null || !needsAutofill()) {
       return;
     }
@@ -723,6 +748,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   private void updateAutofillConfigurationIfNeeded(TextInputChannel.Configuration configuration) {
+    Log.e("mylogs", "updateAutofillConfigurationIfNeeded");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return;
     }
@@ -753,6 +779,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   public void onProvideAutofillVirtualStructure(@NonNull ViewStructure structure, int flags) {
+    Log.e("mylogs", "onProvideAutofillVirtualStructure");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !needsAutofill()) {
       return;
     }
@@ -801,6 +828,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   }
 
   public void autofill(@NonNull SparseArray<AutofillValue> values) {
+    Log.e("mylogs", "autofill");
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
       return;
     }
@@ -838,6 +866,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
   // -------- End: Autofill -------
 
   public void onConnectionClosed() {
+    Log.e("mylogs", "onConnectionClosed");
     textInputChannel.onConnectionClosed(inputTarget.id);
   }
 }
