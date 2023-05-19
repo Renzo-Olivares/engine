@@ -287,10 +287,50 @@ public class InputConnectionAdaptor extends BaseInputConnection
   // occur, and need a chance to be handled by the framework.
   @Override
   public boolean sendKeyEvent(KeyEvent event) {
+    // Logs from pressing the backspace on an empty text field.
+    // Tested on GBoard/Hackers Keyboard/ Microsoft Swift Keyboard.
+    // E/mylogs  (26484): sendkeyevent
+    // E/mylogs  (26484): 67
+    // E/mylogs  (26484): action down
+    // E/mylogs  (26484): back pressed down
+    // E/mylogs  (26484): sendkeyevent
+    // E/mylogs  (26484): 67
+    // E/mylogs  (26484): action up
+    // E/mylogs  (26484): back pressed up
+    // E/mylogs  (26484): handlekeyevent
+    // E/mylogs  (26484): 67
+    // E/mylogs  (26484): action up
+    // E/mylogs  (26484): back pressed up
+    Log.e("mylogs", "sendkeyevent");
+    Log.e("mylogs", String.valueOf(event.getKeyCode()));
+    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+      Log.e("mylogs", "action down");
+      if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+        Log.e("mylogs", "back pressed down");
+      }
+    } else if (event.getAction() == KeyEvent.ACTION_UP) {
+      Log.e("mylogs", "action up");
+      if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+        Log.e("mylogs", "back pressed up");
+      }
+    }
     return keyboardDelegate.handleEvent(event);
   }
 
   public boolean handleKeyEvent(KeyEvent event) {
+    Log.e("mylogs", "handlekeyevent");
+    Log.e("mylogs", String.valueOf(event.getKeyCode()));
+    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+      Log.e("mylogs", "action down");
+      if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+        Log.e("mylogs", "back pressed down");
+      }
+    } else if (event.getAction() == KeyEvent.ACTION_UP) {
+      Log.e("mylogs", "action up");
+      if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+        Log.e("mylogs", "back pressed up");
+      }
+    }
     if (event.getAction() == KeyEvent.ACTION_DOWN) {
       if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
         return handleHorizontalMovement(true, event.isShiftPressed());
@@ -451,6 +491,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean performEditorAction(int actionCode) {
+    Log.e("mylogs", "performEditorAction");
     switch (actionCode) {
       case EditorInfo.IME_ACTION_NONE:
         textInputChannel.newline(mClient);
