@@ -1115,7 +1115,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)delete:(id)sender {
-    NSLog(@"delete");
+  NSLog(@"delete");
   [self replaceRange:_selectedTextRange withText:@""];
 }
 
