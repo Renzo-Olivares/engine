@@ -1115,6 +1115,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)delete:(id)sender {
+    NSLog(@"delete");
   [self replaceRange:_selectedTextRange withText:@""];
 }
 
@@ -2003,6 +2004,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)deleteBackward {
+    NSLog(@"deletebackward");
   _selectionAffinity = kTextAffinityDownstream;
   _scribbleFocusStatus = FlutterScribbleFocusStatusUnfocused;
   [self resetScribbleInteractionStatusIfEnding];
