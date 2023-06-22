@@ -1186,11 +1186,17 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
   [self resetScribbleInteractionStatusIfEnding];
 }
 
+- (void)dictationRecordingDidEnd {
+  NSLog(@"dictationRecordingDidEnd");
+}
+
 - (id)insertDictationResultPlaceholder {
+  NSLog(@"insertDictationResultPlaceholder");
   return @"";
 }
 
 - (void)removeDictationResultPlaceholder:(id)placeholder willInsertResult:(BOOL)willInsertResult {
+  NSLog(@"removeDictationResultPlaceholder");
 }
 
 - (NSString*)textInRange:(UITextRange*)range {
@@ -1233,6 +1239,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)replaceRange:(UITextRange*)range withText:(NSString*)text {
+  NSLog(@"replaceRange");
   NSString* textBeforeChange = [self.text copy];
   NSRange replaceRange = ((FlutterTextRange*)range).range;
   [self replaceRangeLocal:replaceRange withText:text];
@@ -1252,6 +1259,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 - (BOOL)shouldChangeTextInRange:(UITextRange*)range replacementText:(NSString*)text {
   // `temporarilyDeletedComposedCharacter` should only be used during a single text change session.
   // So it needs to be cleared at the start of each text editting session.
+  NSLog(@"shouldChangeTextInRange");
   self.temporarilyDeletedComposedCharacter = nil;
 
   if (self.returnKeyType == UIReturnKeyDefault && [text isEqualToString:@"\n"]) {
@@ -1308,6 +1316,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)setMarkedText:(NSString*)markedText selectedRange:(NSRange)markedSelectedRange {
+  NSLog(@"setMarkedText");
   NSString* textBeforeChange = [self.text copy];
   NSRange selectedRange = _selectedTextRange.range;
   NSRange markedTextRange = ((FlutterTextRange*)self.markedTextRange).range;
@@ -1356,6 +1365,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)unmarkText {
+  NSLog(@"unmarkText");
   if (!self.markedTextRange) {
     return;
   }
@@ -2022,6 +2032,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (UITextPlaceholder*)insertTextPlaceholderWithSize:(CGSize)size API_AVAILABLE(ios(13.0)) {
+  NSLog(@"insertTextPlaceholder");
   [self.textInputDelegate flutterTextInputView:self
                  insertTextPlaceholderWithSize:size
                                     withClient:_textInputClient];
@@ -2030,6 +2041,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)removeTextPlaceholder:(UITextPlaceholder*)textPlaceholder API_AVAILABLE(ios(13.0)) {
+  NSLog(@"removeTextPlaceholder");
   _hasPlaceholder = NO;
   [self.textInputDelegate flutterTextInputView:self removeTextPlaceholder:_textInputClient];
 }
