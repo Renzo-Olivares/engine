@@ -2005,8 +2005,8 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
         };
 
         [self.textInputDelegate flutterTextInputView:self
-                                updateEditingClient:_textInputClient
-                                          withDelta:deltas];
+                                 updateEditingClient:_textInputClient
+                                           withDelta:deltas];
         [_textInputPlugin.pendingDeltas removeAllObjects];
       }
     });
