@@ -752,6 +752,17 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 @interface FlutterTextInputPlugin ()
 @property(nonatomic, readonly, weak) id<FlutterTextInputDelegate> textInputDelegate;
 @property(nonatomic, readonly) UIView* hostView;
+/**
+ * Used to gather multiple deltas performed in one run loop turn. These
+ * will be all sent in one platform channel call so that the framework can process
+ * them in single microtask.
+ */
+@property(nonatomic) NSMutableArray* pendingDeltas;
+
+/**
+ * Allow overriding run loop mode for test.
+ */
+@property(readwrite, nonatomic) NSString* customRunLoopMode;
 @end
 
 @interface FlutterTextInputView ()
@@ -1975,13 +1986,31 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
     @"composingExtent" : @(composingExtent),
   };
 
-  NSDictionary* deltas = @{
-    @"deltas" : @[ deltaToFramework ],
-  };
+  if (_textInputPlugin.pendingDeltas == nil) {
+    _textInputPlugin.pendingDeltas = [NSMutableArray array];
+  }
+  [_textInputPlugin.pendingDeltas addObject:deltaToFramework];
 
-  [self.textInputDelegate flutterTextInputView:self
-                           updateEditingClient:_textInputClient
-                                     withDelta:deltas];
+  if (_textInputPlugin.pendingDeltas.count == 1) {
+    // __weak NSMutableArray* deltas = _textInputPlugin.pendingDeltas;
+
+    CFStringRef runLoopMode = self.customRunLoopMode != nil
+                                  ? (__bridge CFStringRef)self.customRunLoopMode
+                                  : kCFRunLoopCommonModes;
+
+    CFRunLoopPerformBlock(CFRunLoopGetMain(), runLoopMode, ^{
+      if (_textInputPlugin.pendingDeltas.count > 0) {
+        NSDictionary* deltas = @{
+          @"deltas" : _textInputPlugin.pendingDeltas,
+        };
+
+        [self.textInputDelegate flutterTextInputView:self
+                                updateEditingClient:_textInputClient
+                                          withDelta:deltas];
+        [_textInputPlugin.pendingDeltas removeAllObjects];
+      }
+    });
+  }
 }
 
 - (BOOL)hasText {
@@ -1989,6 +2018,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)insertText:(NSString*)text {
+  NSLog(@"insert text");
   if (self.temporarilyDeletedComposedCharacter.length > 0 && text.length == 1 && !text.UTF8String &&
       [text characterAtIndex:0] == [self.temporarilyDeletedComposedCharacter characterAtIndex:0]) {
     // Workaround for https://github.com/flutter/flutter/issues/111494
@@ -2047,6 +2077,7 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 }
 
 - (void)deleteBackward {
+  NSLog(@"delete backward");
   _selectionAffinity = kTextAffinityDownstream;
   _scribbleFocusStatus = FlutterScribbleFocusStatusUnfocused;
   [self resetScribbleInteractionStatusIfEnding];
