@@ -271,7 +271,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean setSelection(int start, int end) {
-    Log.e("set selection",  "Test2");
+    Log.e("set selection", "Test2");
     beginBatchEdit();
     boolean result = super.setSelection(start, end);
     endBatchEdit();
