@@ -495,8 +495,9 @@ class AutofillInfo {
 String _replace(String originalText, String replacementText, ui.TextRange replacedRange) {
   assert(replacedRange.isValid);
   assert(replacedRange.start <= originalText.length && replacedRange.end <= originalText.length);
-
+  print('_replace');
   final ui.TextRange normalizedRange = ui.TextRange(start: math.min(replacedRange.start, replacedRange.end), end: math.max(replacedRange.start, replacedRange.end));
+  print('fail');
 
   return normalizedRange.textBefore(originalText) + replacementText + normalizedRange.textAfter(originalText);
 }
@@ -551,27 +552,36 @@ class TextEditingDeltaState {
       // that we set when beforeinput was fired to determine the [deltaStart].
       // If the deletion is forward, [deltaStart] is set to the new editing state baseOffset
       // and [deltaEnd] is set to [deltaStart] incremented by the length of the deletion.
+      print('1');
       final int deletedLength = newTextEditingDeltaState.oldText.length - newEditingState.text!.length;
       final bool backwardDeletion = newEditingState.baseOffset != lastEditingState?.baseOffset;
       if (backwardDeletion) {
+        print('backward deletion');
         newTextEditingDeltaState.deltaStart = newTextEditingDeltaState.deltaEnd - deletedLength;
       } else {
         // Forward deletion
+        print('forward deletion');
         newTextEditingDeltaState.deltaStart = newEditingState.baseOffset!;
         newTextEditingDeltaState.deltaEnd = newTextEditingDeltaState.deltaStart + deletedLength;
       }
     } else if (isTextBeingChangedAtActiveSelection) {
+      print('2');
       // When a selection of text is replaced by a copy/paste operation we set the starting range
       // of the delta to be the beginning of the selection of the previous editing state.
       newTextEditingDeltaState.deltaStart = lastEditingState!.baseOffset!;
     }
+    print('3');
 
     // If we are composing then set the delta range to the composing region we
     // captured in compositionupdate.
     final bool isCurrentlyComposing = newTextEditingDeltaState.composingOffset != null && newTextEditingDeltaState.composingOffset != newTextEditingDeltaState.composingExtent;
     if (newTextEditingDeltaState.deltaText.isNotEmpty && previousSelectionWasCollapsed && isCurrentlyComposing) {
+      print('here');
       newTextEditingDeltaState.deltaStart = newTextEditingDeltaState.composingOffset!;
+      print('after here');
     }
+
+    print('4');
 
     final bool isDeltaRangeEmpty = newTextEditingDeltaState.deltaStart == -1 && newTextEditingDeltaState.deltaStart == newTextEditingDeltaState.deltaEnd;
     if (!isDeltaRangeEmpty) {
@@ -587,11 +597,15 @@ class TextEditingDeltaState {
       // This verification is needed for cases such as the insertion of a period
       // after a double space, and the insertion of an accented character through
       // a native composing menu.
+      print('xx ${newTextEditingDeltaState.deltaStart} ${newTextEditingDeltaState.deltaEnd}');
       final ui.TextRange replacementRange = ui.TextRange(start: newTextEditingDeltaState.deltaStart, end: newTextEditingDeltaState.deltaEnd);
+      print('xxdoublexx');
       final String textAfterDelta = _replace(
           newTextEditingDeltaState.oldText, newTextEditingDeltaState.deltaText,
           replacementRange);
       final bool isDeltaVerified = textAfterDelta == newEditingState.text!;
+
+      print('10');
 
       if (!isDeltaVerified) {
         // 1. Find all matches for deltaText.
@@ -604,6 +618,7 @@ class TextEditingDeltaState {
           int actualEnd;
           final bool isMatchWithinOldTextBounds = match.start >= 0 && match.end <= newTextEditingDeltaState.oldText.length;
           if (!isMatchWithinOldTextBounds) {
+            print('11');
             actualEnd = match.start + newTextEditingDeltaState.deltaText.length - 1;
             textAfterMatch = _replace(
               newTextEditingDeltaState.oldText,
@@ -614,6 +629,7 @@ class TextEditingDeltaState {
               ),
             );
           } else {
+            print('12');
             actualEnd = actualEnd = isPeriodInsertion? match.end - 1 : match.end;
             textAfterMatch = _replace(
               newTextEditingDeltaState.oldText,
@@ -625,7 +641,10 @@ class TextEditingDeltaState {
             );
           }
 
+          print('13');
+
           if (textAfterMatch == newEditingState.text!) {
+            print('14');
             newTextEditingDeltaState.deltaStart = match.start;
             newTextEditingDeltaState.deltaEnd = actualEnd;
             break;
@@ -637,6 +656,8 @@ class TextEditingDeltaState {
     // Update selection of the delta using information from the new editing state.
     newTextEditingDeltaState.baseOffset = newEditingState.baseOffset;
     newTextEditingDeltaState.extentOffset = newEditingState.extentOffset;
+
+    print('5');
 
     return newTextEditingDeltaState;
   }
@@ -1298,8 +1319,10 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
     subscriptions.add(DomSubscription(domDocument, 'selectionchange',
             handleChange));
 
-    activeDomElement.addEventListener('beforeinput',
-        createDomEventListener(handleBeforeInput));
+    subscriptions.add(DomSubscription(activeDomElement, 'beforeinput', handleBeforeInput));
+
+    // activeDomElement.addEventListener('beforeinput',
+    //     createDomEventListener(handleBeforeInput));
 
     addCompositionEventHandlers(activeDomElement);
 
@@ -1360,7 +1383,9 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
 
   @override
   void setEditingState(EditingState? editingState) {
+    print('setEditingState $editingState');
     lastEditingState = editingState;
+    // _editingDeltaState = null;
     if (!isEnabled || !editingState!.isValid) {
       return;
     }
@@ -1378,24 +1403,30 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
 
   void handleChange(DomEvent event) {
     assert(isEnabled);
+    print('handleChange');
 
     EditingState newEditingState = EditingState.fromDomElement(activeDomElement);
     newEditingState = determineCompositionState(newEditingState);
 
     TextEditingDeltaState? newTextEditingDeltaState;
     if (inputConfiguration.enableDeltaModel) {
+      print('infer delta $newEditingState ${newEditingState.text}');
       editingDeltaState.composingOffset = newEditingState.composingBaseOffset;
       editingDeltaState.composingExtent = newEditingState.composingExtentOffset;
       newTextEditingDeltaState = TextEditingDeltaState.inferDeltaState(newEditingState, lastEditingState, editingDeltaState);
     }
 
     if (newEditingState != lastEditingState) {
+      print('actually different');
       lastEditingState = newEditingState;
       _editingDeltaState = newTextEditingDeltaState;
       onChange!(lastEditingState, _editingDeltaState);
-      // Flush delta after it has been sent to framework.
-      _editingDeltaState = null;
+      // // Flush delta after it has been sent to framework.
+      // _editingDeltaState = null;
     }
+    print('flushing');
+    // Flush delta after it has been sent to framework.
+    _editingDeltaState = null;
   }
 
   void handleBeforeInput(DomEvent event) {
@@ -1409,25 +1440,28 @@ abstract class DefaultTextEditingStrategy with CompositionAwareMixin implements 
     // text update delta.
     final String? eventData = getJsProperty<void>(event, 'data') as String?;
     final String? inputType = getJsProperty<void>(event, 'inputType') as String?;
+    print('handleBeforeInput $inputType, $eventData ${getJsProperty<void>(event, 'cancelable') as bool?}');
 
     if (inputType != null) {
+      final bool isSelectionInverted = lastEditingState!.baseOffset! > lastEditingState!.extentOffset!;
       if (inputType.contains('delete')) {
         // The deltaStart is set in handleChange because there is where we get access
         // to the new selection baseOffset which is our new deltaStart.
         editingDeltaState.deltaText = '';
-        editingDeltaState.deltaEnd = lastEditingState!.extentOffset!;
+        editingDeltaState.deltaEnd = isSelectionInverted ? lastEditingState!.baseOffset! : lastEditingState!.extentOffset!;
+        print('delete ${editingDeltaState.deltaEnd}');
       } else if (inputType == 'insertLineBreak'){
         // event.data is null on a line break, so we manually set deltaText as a line break by setting it to '\n'.
         editingDeltaState.deltaText = '\n';
-        editingDeltaState.deltaStart = lastEditingState!.extentOffset!;
-        editingDeltaState.deltaEnd = lastEditingState!.extentOffset!;
+        editingDeltaState.deltaStart = isSelectionInverted ? lastEditingState!.baseOffset! : lastEditingState!.extentOffset!;
+        editingDeltaState.deltaEnd = isSelectionInverted ? lastEditingState!.baseOffset! : lastEditingState!.extentOffset!;
       } else if (eventData != null) {
         // When event.data is not null we will begin by considering this delta as an insertion
         // at the selection extentOffset. This may change due to logic in handleChange to handle
         // composition and other IME behaviors.
         editingDeltaState.deltaText = eventData;
-        editingDeltaState.deltaStart = lastEditingState!.extentOffset!;
-        editingDeltaState.deltaEnd = lastEditingState!.extentOffset!;
+        editingDeltaState.deltaStart = isSelectionInverted ? lastEditingState!.baseOffset! : lastEditingState!.extentOffset!;
+        editingDeltaState.deltaEnd = isSelectionInverted ? lastEditingState!.baseOffset! : lastEditingState!.extentOffset!;
       }
     }
   }
@@ -2196,6 +2230,7 @@ class TextEditingChannel {
 
   /// Sends the 'TextInputClient.updateEditingStateWithDeltas' message to the framework.
   void updateEditingStateWithDelta(int? clientId, TextEditingDeltaState? editingDeltaState) {
+    print('updateEditingStateWithDelta from engine $editingDeltaState');
     EnginePlatformDispatcher.instance.invokeOnPlatformMessage(
       'flutter/textinput',
       const JSONMethodCodec().encodeMethodCall(

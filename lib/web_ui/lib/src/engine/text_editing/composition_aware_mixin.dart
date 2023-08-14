@@ -74,12 +74,16 @@ mixin CompositionAwareMixin {
     if (editingState.baseOffset == null || composingText == null || editingState.text == null) {
       return editingState;
     }
+    print('determine composing state ${editingState.baseOffset} ${editingState.extentOffset} ${composingText?.length}');
 
-    final int composingBase = editingState.baseOffset! - composingText!.length;
+    // final int composingBase = editingState.baseOffset! - composingText!.length;
+    final int composingBase = editingState.extentOffset! - composingText!.length;
 
     if (composingBase < 0) {
+      print('returning from here');
       return editingState;
     }
+    print('got here');
 
     return editingState.copyWith(
       composingBaseOffset: composingBase,
