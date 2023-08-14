@@ -91,11 +91,15 @@ class ListenableEditingState extends SpannableStringBuilder {
   ///
   /// Batch edits nest.
   public void beginBatchEdit() {
+    Log.e("begin batch edit1", "lolzz");
+    Log.e(String.valueOf(mBatchEditNestDepth), "lolzz main batchedit");
     mBatchEditNestDepth++;
     if (mChangeNotificationDepth > 0) {
+      Log.e("begin batch edit2", "lolzz");
       Log.e(TAG, "editing state should not be changed in a listener callback");
     }
     if (mBatchEditNestDepth == 1 && !mListeners.isEmpty()) {
+      Log.e("begin batch edit3", "lolzz");
       mTextWhenBeginBatchEdit = toString();
       mSelectionStartWhenBeginBatchEdit = getSelectionStart();
       mSelectionEndWhenBeginBatchEdit = getSelectionEnd();
@@ -112,6 +116,7 @@ class ListenableEditingState extends SpannableStringBuilder {
       return;
     }
     if (mBatchEditNestDepth == 1) {
+      Log.e("end batch edit", "lolzzz");
       for (final EditingStateWatcher listener : mPendingListeners) {
         notifyListener(listener, true, true, true);
       }
@@ -150,6 +155,7 @@ class ListenableEditingState extends SpannableStringBuilder {
   ///
   /// This method will also update the composing region if it has changed.
   public void setEditingState(TextInputChannel.TextEditState newState) {
+    Log.e("set editing state", "woas");
     beginBatchEdit();
     replace(0, length(), newState.text);
 
@@ -210,6 +216,8 @@ class ListenableEditingState extends SpannableStringBuilder {
     if (textChanged) {
       mToStringCache = null;
     }
+    Log.e("replaceee", "lolzzz");
+    Log.e(String.valueOf(mBatchEditNestDepth), "lol");
 
     final int selectionStart = getSelectionStart();
     final int selectionEnd = getSelectionEnd();
@@ -229,8 +237,10 @@ class ListenableEditingState extends SpannableStringBuilder {
             getComposingEnd()));
 
     if (mBatchEditNestDepth > 0) {
+      Log.e("inner", "lolzzz");
       return editable;
     }
+    Log.e("woah last", "lolzzzzz");
 
     final boolean selectionChanged =
         getSelectionStart() != selectionStart || getSelectionEnd() != selectionEnd;

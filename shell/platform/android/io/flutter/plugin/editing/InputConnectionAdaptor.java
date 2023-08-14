@@ -147,6 +147,11 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean beginBatchEdit() {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    for (StackTraceElement element : stackTrace) {
+      Log.e(element.toString(), "logsss");
+    }
+    Log.e("begin batch edit", "input conenction adaptor");
     mEditable.beginBatchEdit();
     batchEditNestDepth += 1;
     return super.beginBatchEdit();
@@ -171,6 +176,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
     if (mEditable.getSelectionStart() == -1) {
       return true;
     }
+    Log.e("delete surrounding text", "input connection adaptor");
 
     final boolean result = super.deleteSurroundingText(beforeLength, afterLength);
     return result;
@@ -184,6 +190,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean setComposingRegion(int start, int end) {
+    Log.e("set composing region", "input connection adaptor");
     final boolean result = super.setComposingRegion(start, end);
     return result;
   }
@@ -191,10 +198,13 @@ public class InputConnectionAdaptor extends BaseInputConnection
   @Override
   public boolean setComposingText(CharSequence text, int newCursorPosition) {
     boolean result;
+    Log.e("set composign text", "input connection adaptor");
     beginBatchEdit();
     if (text.length() == 0) {
+      Log.e("commit text", "test");
       result = super.commitText(text, newCursorPosition);
     } else {
+      Log.e("set composing text", "test");
       result = super.setComposingText(text, newCursorPosition);
     }
     endBatchEdit();
@@ -203,6 +213,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean finishComposingText() {
+    Log.e("finishComposingText", "input connection adaptor");
     final boolean result = super.finishComposingText();
     return result;
   }
@@ -260,6 +271,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean setSelection(int start, int end) {
+    Log.e("set selection",  "Test2");
     beginBatchEdit();
     boolean result = super.setSelection(start, end);
     endBatchEdit();
@@ -287,11 +299,23 @@ public class InputConnectionAdaptor extends BaseInputConnection
   // occur, and need a chance to be handled by the framework.
   @Override
   public boolean sendKeyEvent(KeyEvent event) {
+    Log.e("sendKeyEvent", "lol");
+    Log.e(String.valueOf(event.getAction()), "lol");
+    // keyboardDelegate.handleEvent(event);
+    // return keyboardDelegate.handleEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+      if (event.getKeyCode() == KeyEvent.KEYCODE_DEL) {
+        endBatchEdit();
+      }
+    }
     return keyboardDelegate.handleEvent(event);
   }
 
   public boolean handleKeyEvent(KeyEvent event) {
+    Log.e("handleKeyEvent", "lol");
+    Log.e(String.valueOf(event.getAction()), "lol");
     if (event.getAction() == KeyEvent.ACTION_DOWN) {
+      Log.e("down", "lol");
       if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
         return handleHorizontalMovement(true, event.isShiftPressed());
       } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
@@ -318,6 +342,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
         final int selMin = Math.min(selStart, selEnd);
         final int selMax = Math.max(selStart, selEnd);
+        Log.e("beg batch edit", "jkbdedd dihedioeudude");
         beginBatchEdit();
         if (selMin != selMax) mEditable.delete(selMin, selMax);
         mEditable.insert(selMin, String.valueOf((char) character));
@@ -362,6 +387,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
     final boolean shouldCollapse = selStart == selEnd && !isShiftPressed;
 
+    Log.e("handle vertical", "test2");
     beginBatchEdit();
     if (shouldCollapse) {
       if (isUp) {
@@ -385,6 +411,7 @@ public class InputConnectionAdaptor extends BaseInputConnection
 
   @Override
   public boolean performContextMenuAction(int id) {
+    Log.e("begin batch cotnext", "text 2");
     beginBatchEdit();
     final boolean result = doPerformContextMenuAction(id);
     endBatchEdit();

@@ -596,9 +596,11 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
 
   // -------- Start: KeyboardManager Synchronous Responder -------
   public boolean handleKeyEvent(@NonNull KeyEvent keyEvent) {
+    Log.e("handleKeyEvent", "lolzzz");
     if (!getInputMethodManager().isAcceptingText() || lastInputConnection == null) {
       return false;
     }
+    Log.e("handleKeyEvent pass", "lolzzz");
 
     // Send the KeyEvent as an IME KeyEvent. If the input connection is an
     // InputConnectionAdaptor then call its handleKeyEvent method (because
@@ -620,6 +622,7 @@ public class TextInputPlugin implements ListenableEditingState.EditingStateWatch
       // Notify the autofill manager of the value change.
       notifyValueChanged(mEditable.toString());
     }
+    Log.e("didChange", "lolzzzz");
 
     final int selectionStart = mEditable.getSelectionStart();
     final int selectionEnd = mEditable.getSelectionEnd();
