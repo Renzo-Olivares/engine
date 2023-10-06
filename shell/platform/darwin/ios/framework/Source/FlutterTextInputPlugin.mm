@@ -1223,11 +1223,21 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
   [self resetScribbleInteractionStatusIfEnding];
 }
 
+- (void)dictationRecordingDidEnd {
+  NSLog(@"dictationRecordingDidEnd");
+}
+
+- (void)dictationRecognitionFailed {
+  NSLog(@"dictationRecognitionFailed");
+}
+
 - (id)insertDictationResultPlaceholder {
+  NSLog(@"insertDictationResultPlaceholder");
   return @"";
 }
 
 - (void)removeDictationResultPlaceholder:(id)placeholder willInsertResult:(BOOL)willInsertResult {
+  NSLog(@"removeDictationResultPlaceholder");
 }
 
 - (NSString*)textInRange:(UITextRange*)range {
