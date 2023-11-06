@@ -2314,10 +2314,11 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
                                                  name:UIKeyboardWillShowNotification
                                                object:nil];
 
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(handleTextInputModeChanged:)
-                                                 name:UITextInputCurrentInputModeDidChangeNotification
-                                               object:nil];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(handleTextInputModeChanged:)
+               name:UITextInputCurrentInputModeDidChangeNotification
+             object:nil];
 
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(handleEditingBegan:)
@@ -2343,7 +2344,9 @@ static BOOL IsSelectionRectBoundaryCloserToPoint(CGPoint point,
 
 - (void)handleTextInputModeChanged:(NSNotification*)notification {
   NSLog(@"changed");
-  NSLog(@"%@", self.textInputView.textInputMode.primaryLanguage); // This detects dictation up until iOS15.
+  NSLog(
+      @"%@",
+      self.textInputView.textInputMode.primaryLanguage);  // This detects dictation up until iOS15.
 }
 
 - (void)handleKeyboardWillShow:(NSNotification*)notification {
