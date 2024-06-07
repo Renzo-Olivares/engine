@@ -3,19 +3,25 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:html' as html;
-import 'package:test/test.dart';
 import 'package:ui/src/engine.dart';
 import 'package:ui/ui.dart' as ui;
 import 'package:web_engine_tester/golden_tester.dart';
 
 /// Commit a recording canvas to a bitmap, and compare with the expected.
-Future<void> canvasScreenshot(RecordingCanvas rc, String fileName,
-    {ui.Rect region = const ui.Rect.fromLTWH(0, 0, 600, 800),
-      double maxDiffRatePercent = 0.0, bool setupPerspective = false,
-      bool write = false}) async {
-  final EngineCanvas engineCanvas = BitmapCanvas(region,
-      RenderStrategy());
+///
+/// [region] specifies the area of the canvas that will be included in the
+/// golden.
+///
+/// If [canvasRect] is omitted, it defaults to the value of [region].
+Future<void> canvasScreenshot(
+  RecordingCanvas rc,
+  String fileName, {
+  ui.Rect region = const ui.Rect.fromLTWH(0, 0, 500, 500),
+  ui.Rect? canvasRect,
+  bool setupPerspective = false,
+}) async {
+  canvasRect ??= region;
+  final EngineCanvas engineCanvas = BitmapCanvas(canvasRect, RenderStrategy());
 
   rc.endRecording();
   rc.apply(engineCanvas, region);
@@ -39,39 +45,27 @@ Future<void> canvasScreenshot(RecordingCanvas rc, String fileName,
     sceneElement.append(engineCanvas.rootElement);
     domDocument.body!.append(sceneElement);
     await matchGoldenFile('$fileName.png',
-        region: region, maxDiffRatePercent: maxDiffRatePercent, write: write);
+        region: region);
   } finally {
     // The page is reused across tests, so remove the element after taking the
-    // Scuba screenshot.
+    // screenshot.
     sceneElement.remove();
   }
 }
 
 Future<void> sceneScreenshot(SurfaceSceneBuilder sceneBuilder, String fileName,
-    {ui.Rect region = const ui.Rect.fromLTWH(0, 0, 600, 800),
-    double maxDiffRatePercent = 0.0, bool write = false}) async {
-  html.Element? sceneElement;
+    {ui.Rect region = const ui.Rect.fromLTWH(0, 0, 600, 800)}) async {
+  DomElement? sceneElement;
   try {
     sceneElement = sceneBuilder
         .build()
         .webOnlyRootElement;
-    html.document.body!.append(sceneElement!);
+    domDocument.body!.append(sceneElement!);
     await matchGoldenFile('$fileName.png',
-        region: region, maxDiffRatePercent: maxDiffRatePercent, write: write);
+        region: region);
   } finally {
     // The page is reused across tests, so remove the element after taking the
-    // Scuba screenshot.
+    // screenshot.
     sceneElement?.remove();
   }
-}
-
-
-/// Configures the test to use bundled Roboto and Ahem fonts to avoid golden
-/// screenshot differences due to differences in the preinstalled system fonts.
-void setUpStableTestFonts() {
-  setUpAll(() async {
-    await ui.webOnlyInitializePlatform();
-    fontCollection.debugRegisterTestFonts();
-    await fontCollection.ensureFontsLoaded();
-  });
 }

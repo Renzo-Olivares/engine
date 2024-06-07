@@ -19,30 +19,37 @@ class DirectionalGaussianBlurFilterContents final : public FilterContents {
 
   void SetSigma(Sigma sigma);
 
+  void SetSecondarySigma(Sigma sigma);
+
   void SetDirection(Vector2 direction);
 
   void SetBlurStyle(BlurStyle blur_style);
 
-  void SetSourceOverride(FilterInput::Ref alpha_mask);
+  void SetTileMode(Entity::TileMode tile_mode);
+
+  void SetIsSecondPass(bool is_second_pass);
 
   // |FilterContents|
-  std::optional<Rect> GetFilterCoverage(const FilterInput::Vector& inputs,
-                                        const Entity& entity) const override;
+  std::optional<Rect> GetFilterCoverage(
+      const FilterInput::Vector& inputs,
+      const Entity& entity,
+      const Matrix& effect_transform) const override;
 
  private:
   // |FilterContents|
-  bool RenderFilter(const FilterInput::Vector& input_textures,
-                    const ContentContext& renderer,
-                    const Entity& entity,
-                    RenderPass& pass,
-                    const Rect& coverage) const override;
+  std::optional<Entity> RenderFilter(
+      const FilterInput::Vector& input_textures,
+      const ContentContext& renderer,
+      const Entity& entity,
+      const Matrix& effect_transform,
+      const Rect& coverage,
+      const std::optional<Rect>& coverage_hint) const override;
   Sigma blur_sigma_;
+  Sigma secondary_blur_sigma_;
   Vector2 blur_direction_;
   BlurStyle blur_style_ = BlurStyle::kNormal;
-  bool src_color_factor_ = false;
-  bool inner_blur_factor_ = true;
-  bool outer_blur_factor_ = true;
-  FilterInput::Ref source_override_;
+  Entity::TileMode tile_mode_ = Entity::TileMode::kDecal;
+  bool is_second_pass_ = false;
 
   FML_DISALLOW_COPY_AND_ASSIGN(DirectionalGaussianBlurFilterContents);
 };

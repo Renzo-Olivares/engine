@@ -23,7 +23,7 @@ extern const NSDictionary* keyCodeToPhysicalKey;
  */
 extern const NSDictionary* keyCodeToLogicalKey;
 
-// Several mask constants. See KeyCodeMap.mm for their descriptions.
+// Several mask constants. See KeyCodeMap.g.mm for their descriptions.
 
 /**
  * Mask for the 32-bit value portion of the key code.
@@ -104,6 +104,6 @@ typedef struct {
  * All keys that Flutter wants to derive layout for, and guides on how to derive
  * them.
  */
-extern const std::vector<LayoutGoal> layoutGoals;
+extern const std::vector<LayoutGoal> kLayoutGoals;
 
 }  // namespace flutter

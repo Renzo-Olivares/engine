@@ -9,17 +9,18 @@ import 'package:test/test.dart';
 import 'package:ui/src/engine.dart';
 import 'package:ui/ui.dart' hide window;
 
+import '../../common/test_initialization.dart';
 import 'helper.dart';
-import 'text_scuba.dart';
-
-typedef CanvasTest = FutureOr<void> Function(EngineCanvas canvas);
 
 void main() {
   internalBootstrapBrowserTest(() => testMain);
 }
 
 Future<void> testMain() async {
-  setUpStableTestFonts();
+  setUpUnitTests(
+    emulateTesterEnvironment: false,
+    setUpTestViewDimensions: false,
+  );
 
   void testEllipsis(EngineCanvas canvas) {
     Offset offset = Offset.zero;
@@ -28,6 +29,9 @@ Future<void> testMain() async {
     const double fontSize = 22.0;
     const double width = 126.0;
     const double padding = 20.0;
+    final SurfacePaintData borderPaint = SurfacePaintData()
+      ..color = black.value
+      ..style = PaintingStyle.stroke;
 
     paragraph = rich(
       EngineParagraphStyle(fontFamily: 'Roboto', fontSize: fontSize, ellipsis: '...'),
@@ -39,6 +43,7 @@ Future<void> testMain() async {
       },
     )..layout(constrain(width));
     canvas.drawParagraph(paragraph, offset);
+    canvas.drawRect(Rect.fromLTWH(offset.dx, offset.dy, width, paragraph.height), borderPaint);
     offset = offset.translate(0, paragraph.height + padding);
 
     paragraph = rich(
@@ -53,6 +58,7 @@ Future<void> testMain() async {
       },
     )..layout(constrain(width));
     canvas.drawParagraph(paragraph, offset);
+    canvas.drawRect(Rect.fromLTWH(offset.dx, offset.dy, width, paragraph.height), borderPaint);
     offset = offset.translate(0, paragraph.height + padding);
 
     paragraph = rich(
@@ -83,6 +89,7 @@ Future<void> testMain() async {
       },
     )..layout(constrain(width));
     canvas.drawParagraph(paragraph, offset);
+    canvas.drawRect(Rect.fromLTWH(offset.dx, offset.dy, width, paragraph.height), borderPaint);
     offset = offset.translate(0, paragraph.height + padding);
 
     paragraph = rich(
@@ -91,9 +98,9 @@ Future<void> testMain() async {
         builder.pushStyle(EngineTextStyle.only(color: blue));
         builder.addText('Lorem');
         builder.pushStyle(EngineTextStyle.only(color: green));
-        builder.addText('ipsum');
+        builder.addText('ipsu');
         builder.pushStyle(EngineTextStyle.only(color: red));
-        builder.addText('dolor');
+        builder.addText('mdolor');
         builder.pushStyle(EngineTextStyle.only(color: black));
         builder.addText('sit');
         builder.pushStyle(EngineTextStyle.only(color: blue));
@@ -103,6 +110,7 @@ Future<void> testMain() async {
       },
     )..layout(constrain(width));
     canvas.drawParagraph(paragraph, offset);
+    canvas.drawRect(Rect.fromLTWH(offset.dx, offset.dy, width, paragraph.height), borderPaint);
     offset = offset.translate(0, paragraph.height + padding);
   }
 
