@@ -11,7 +11,7 @@ namespace impeller {
 
 class PlaygroundImplGLES final : public PlaygroundImpl {
  public:
-  PlaygroundImplGLES();
+  explicit PlaygroundImplGLES(PlaygroundSwitches switches);
 
   ~PlaygroundImplGLES();
 
@@ -27,7 +27,7 @@ class PlaygroundImplGLES final : public PlaygroundImpl {
   std::shared_ptr<Context> GetContext() const override;
 
   // |PlaygroundImpl|
-  WindowHandle GetWindowHandle() override;
+  WindowHandle GetWindowHandle() const override;
 
   // |PlaygroundImpl|
   std::unique_ptr<Surface> AcquireSurfaceFrame(

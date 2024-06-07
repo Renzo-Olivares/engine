@@ -7,13 +7,18 @@ package dev.flutter.scenarios;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetFileDescriptor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import io.flutter.Log;
 import io.flutter.embedding.engine.FlutterShellArgs;
 import io.flutter.embedding.engine.loader.FlutterLoader;
@@ -35,6 +40,8 @@ public abstract class TestActivity extends TestableFlutterActivity {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    hideSystemBars(getWindow());
+
     final Intent launchIntent = getIntent();
     if ("com.google.intent.action.TEST_LOOP".equals(launchIntent.getAction())) {
       if (Build.VERSION.SDK_INT > 22) {
@@ -78,6 +85,10 @@ public abstract class TestActivity extends TestableFlutterActivity {
       test.put("name", "animated_color_square");
     }
     test.put("use_android_view", launchIntent.getBooleanExtra("use_android_view", false));
+    test.put(
+        "expect_android_view_fallback",
+        launchIntent.getBooleanExtra("expect_android_view_fallback", false));
+    test.put("view_type", launchIntent.getStringExtra("view_type"));
     getScenarioParams(test);
     channel.invokeMethod("set_scenario", test);
   }
@@ -103,14 +114,23 @@ public abstract class TestActivity extends TestableFlutterActivity {
     channel.send(
         null,
         (ByteBuffer reply) -> {
+          AssetFileDescriptor afd = null;
           try {
-            final FileDescriptor fd =
-                getContentResolver().openAssetFileDescriptor(logFile, "w").getFileDescriptor();
+            afd = getContentResolver().openAssetFileDescriptor(logFile, "w");
+            final FileDescriptor fd = afd.getFileDescriptor();
             final FileOutputStream outputStream = new FileOutputStream(fd);
             outputStream.write(reply.array());
             outputStream.close();
           } catch (IOException ex) {
             Log.e(TAG, "Could not write timeline file", ex);
+          } finally {
+            try {
+              if (afd != null) {
+                afd.close();
+              }
+            } catch (IOException e) {
+              Log.w(TAG, "Could not close", e);
+            }
           }
           finish();
         });
@@ -157,5 +177,13 @@ public abstract class TestActivity extends TestableFlutterActivity {
             }
           }
         });
+  }
+
+  private static void hideSystemBars(Window window) {
+    final WindowInsetsControllerCompat insetController =
+        WindowCompat.getInsetsController(window, window.getDecorView());
+    insetController.setSystemBarsBehavior(
+        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+    insetController.hide(WindowInsetsCompat.Type.systemBars());
   }
 }

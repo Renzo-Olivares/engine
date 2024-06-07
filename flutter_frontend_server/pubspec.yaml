@@ -18,7 +18,7 @@ homepage: https://flutter.dev
 # relative to this directory into //third_party/dart
 
 environment:
-  sdk: ">=2.2.2 <3.0.0"
+  sdk: '>=3.2.0-0 <4.0.0'
 
 dependencies:
   args: any
@@ -43,20 +43,24 @@ dependency_overrides:
     path: ../../third_party/dart/third_party/pkg/bazel_worker
   build_integration:
     path: ../../third_party/dart/pkg/build_integration
-  charcode:
-    path: ../../third_party/dart/third_party/pkg/charcode
   collection:
     path: ../../third_party/dart/third_party/pkg/collection
   compiler:
     path: ../../third_party/dart/pkg/compiler
   crypto:
     path: ../../third_party/dart/third_party/pkg/crypto
+  dart_internal:
+    path: ../../third_party/dart/pkg/dart_internal
   dart2js_info:
     path: ../../third_party/dart/pkg/dart2js_info
+  dart2wasm:
+    path: ../../third_party/dart/pkg/dart2wasm
   dev_compiler:
     path: ../../third_party/dart/pkg/dev_compiler
   expect:
     path: ../../third_party/dart/pkg/expect
+  ffi:
+    path: ../../third_party/dart/third_party/pkg/ffi
   fixnum:
     path: ../../third_party/dart/third_party/pkg/fixnum
   front_end:
@@ -77,8 +81,10 @@ dependency_overrides:
     path: ../testing/litetest
   meta:
     path: ../../third_party/dart/pkg/meta
+  mmap:
+    path: ../../third_party/dart/pkg/mmap
   package_config:
-    path: ../../third_party/dart/third_party/pkg_tested/package_config
+    path: ../../third_party/dart/third_party/pkg/package_config
   path:
     path: ../../third_party/dart/third_party/pkg/path
   protobuf:
@@ -107,5 +113,9 @@ dependency_overrides:
     path: ../../third_party/dart/pkg/vm
   vm_service:
     path: ../../third_party/dart/pkg/vm_service
+  vm_snapshot_analysis:
+    path: ../../third_party/dart/pkg/vm_snapshot_analysis
+  wasm_builder:
+    path: ../../third_party/dart/pkg/wasm_builder
   yaml:
     path: ../../third_party/dart/third_party/pkg/yaml

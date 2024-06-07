@@ -19,7 +19,9 @@ FLUTTER_ASSERT_ARC;
 
 namespace flutter {
 class PointerDataPacket {};
-}
+}  // namespace flutter
+
+using namespace flutter::testing;
 
 /// Sometimes we have to use a custom mock to avoid retain cycles in ocmock.
 @interface FlutterEnginePartialMock : FlutterEngine
