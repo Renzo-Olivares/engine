@@ -34,7 +34,7 @@ jobs:
         run: python ci/deps_parser.py
 
       - name: "Run analysis"
-        uses: ossf/scorecard-action@c1aec4ac820532bab364f02a81873c555a0ba3a1
+        uses: ossf/scorecard-action@dc50aa9510b46c811795eb24b2f1ba02a914e534
         with:
           results_file: results.sarif
           results_format: sarif
