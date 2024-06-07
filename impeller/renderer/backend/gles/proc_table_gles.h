@@ -5,11 +5,14 @@
 #pragma once
 
 #include <functional>
+#include <string>
 #include <vector>
 
 #include "flutter/fml/logging.h"
 #include "flutter/fml/macros.h"
 #include "flutter/fml/mapping.h"
+#include "flutter/fml/trace_event.h"
+#include "impeller/renderer/backend/gles/capabilities_gles.h"
 #include "impeller/renderer/backend/gles/description_gles.h"
 #include "impeller/renderer/backend/gles/gles.h"
 
@@ -27,11 +30,9 @@ struct AutoErrorCheck {
   ~AutoErrorCheck() {
     if (error_fn) {
       auto error = error_fn();
-      if (error != GL_NO_ERROR) {
-        FML_LOG(ERROR) << "GL Error " << GLErrorToString(error) << "(" << error
-                       << ")"
-                       << " encountered on call to " << name;
-      }
+      FML_CHECK(error == GL_NO_ERROR)
+          << "GL Error " << GLErrorToString(error) << "(" << error << ")"
+          << " encountered on call to " << name;
     }
   }
 };
@@ -64,7 +65,12 @@ struct GLProc {
   ///
   template <class... Args>
   auto operator()(Args&&... args) const {
+#ifdef IMPELLER_ERROR_CHECK_ALL_GL_CALLS
     AutoErrorCheck error(error_fn, name);
+#endif  // IMPELLER_ERROR_CHECK_ALL_GL_CALLS
+#ifdef IMPELLER_TRACE_ALL_GL_CALLS
+    TRACE_EVENT0("impeller", name);
+#endif  // IMPELLER_TRACE_ALL_GL_CALLS
     return function(std::forward<Args>(args)...);
   }
 
@@ -110,13 +116,16 @@ struct GLProc {
   PROC(DetachShader);                        \
   PROC(Disable);                             \
   PROC(DisableVertexAttribArray);            \
+  PROC(DrawArrays);                          \
   PROC(DrawElements);                        \
   PROC(Enable);                              \
   PROC(EnableVertexAttribArray);             \
+  PROC(Flush);                               \
   PROC(FramebufferRenderbuffer);             \
   PROC(FramebufferTexture2D);                \
   PROC(FrontFace);                           \
   PROC(GenBuffers);                          \
+  PROC(GenerateMipmap);                      \
   PROC(GenFramebuffers);                     \
   PROC(GenRenderbuffers);                    \
   PROC(GenTextures);                         \
@@ -125,13 +134,19 @@ struct GLProc {
   PROC(GetFloatv);                           \
   PROC(GetFramebufferAttachmentParameteriv); \
   PROC(GetIntegerv);                         \
+  PROC(GetProgramInfoLog);                   \
   PROC(GetProgramiv);                        \
   PROC(GetShaderInfoLog);                    \
   PROC(GetShaderiv);                         \
   PROC(GetString);                           \
+  PROC(GetStringi);                          \
   PROC(GetUniformLocation);                  \
+  PROC(IsBuffer);                            \
   PROC(IsFramebuffer);                       \
   PROC(IsProgram);                           \
+  PROC(IsRenderbuffer);                      \
+  PROC(IsShader);                            \
+  PROC(IsTexture);                           \
   PROC(LinkProgram);                         \
   PROC(RenderbufferStorage);                 \
   PROC(Scissor);                             \
@@ -145,11 +160,15 @@ struct GLProc {
   PROC(Uniform1fv);                          \
   PROC(Uniform1i);                           \
   PROC(Uniform2fv);                          \
+  PROC(Uniform3fv);                          \
   PROC(Uniform4fv);                          \
   PROC(UniformMatrix4fv);                    \
   PROC(UseProgram);                          \
   PROC(VertexAttribPointer);                 \
-  PROC(Viewport);
+  PROC(Viewport);                            \
+  PROC(ReadPixels);
+
+#define FOR_EACH_IMPELLER_GLES3_PROC(PROC) PROC(BlitFramebuffer);
 
 #define FOR_EACH_IMPELLER_EXT_PROC(PROC) \
   PROC(DiscardFramebufferEXT);           \
@@ -177,6 +196,7 @@ class ProcTableGLES {
   GLProc<decltype(gl##name)> name = {"gl" #name, nullptr};
 
   FOR_EACH_IMPELLER_PROC(IMPELLER_PROC);
+  FOR_EACH_IMPELLER_GLES3_PROC(IMPELLER_PROC);
   FOR_EACH_IMPELLER_EXT_PROC(IMPELLER_PROC);
 
 #undef IMPELLER_PROC
@@ -187,11 +207,15 @@ class ProcTableGLES {
 
   const DescriptionGLES* GetDescription() const;
 
+  const CapabilitiesGLES* GetCapabilities() const;
+
   std::string DescribeCurrentFramebuffer() const;
+
+  std::string GetProgramInfoLogString(GLuint program) const;
 
   bool IsCurrentFramebufferComplete() const;
 
-  void SetDebugLabel(DebugResourceType type,
+  bool SetDebugLabel(DebugResourceType type,
                      GLint name,
                      const std::string& label) const;
 
@@ -202,6 +226,7 @@ class ProcTableGLES {
  private:
   bool is_valid_ = false;
   std::unique_ptr<DescriptionGLES> description_;
+  std::unique_ptr<CapabilitiesGLES> capabilities_;
   GLint debug_label_max_length_ = 0;
 
   FML_DISALLOW_COPY_AND_ASSIGN(ProcTableGLES);

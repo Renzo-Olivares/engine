@@ -14,6 +14,18 @@
 
 namespace impeller {
 
+enum class Cap {
+  kButt,
+  kRound,
+  kSquare,
+};
+
+enum class Join {
+  kMiter,
+  kRound,
+  kBevel,
+};
+
 enum class FillType {
   kNonZero,  // The default winding order.
   kOdd,
@@ -22,17 +34,22 @@ enum class FillType {
   kAbsGeqTwo,
 };
 
+enum class Convexity {
+  kUnknown,
+  kConvex,
+};
+
 //------------------------------------------------------------------------------
 /// @brief      Paths are lightweight objects that describe a collection of
 ///             linear, quadratic, or cubic segments. These segments may be
-///             be broken up by move commands, which are effectively linear
+///             broken up by move commands, which are effectively linear
 ///             commands that pick up the pen rather than continuing to draw.
 ///
 ///             All shapes supported by Impeller are paths either directly or
 ///             via approximation (in the case of circles).
 ///
-///             Creating paths that describe complex shapes is usually done by a
-///             path builder.
+///             Paths are externally immutable once created, Creating paths must
+///             be done using a path builder.
 ///
 class Path {
  public:
@@ -44,11 +61,31 @@ class Path {
   };
 
   struct PolylineContour {
+    struct Component {
+      size_t component_start_index;
+      /// Denotes whether this component is a curve.
+      ///
+      /// This is set to true when this component is generated from
+      /// QuadraticComponent or CubicPathComponent.
+      bool is_curve;
+    };
     /// Index that denotes the first point of this contour.
     size_t start_index;
+
     /// Denotes whether the last point of this contour is connected to the first
     /// point of this contour or not.
     bool is_closed;
+
+    /// The direction of the contour's start cap.
+    Vector2 start_direction;
+    /// The direction of the contour's end cap.
+    Vector2 end_direction;
+
+    /// Distinct components in this contour.
+    ///
+    /// If this contour is generated from multiple path components, each
+    /// path component forms a component in this vector.
+    std::vector<Component> components;
   };
 
   /// One or more contours represented as a series of points and indices in
@@ -71,28 +108,19 @@ class Path {
 
   ~Path();
 
-  size_t GetComponentCount() const;
-
-  void SetFillType(FillType fill);
+  size_t GetComponentCount(std::optional<ComponentType> type = {}) const;
 
   FillType GetFillType() const;
 
-  Path& AddLinearComponent(Point p1, Point p2);
-
-  Path& AddQuadraticComponent(Point p1, Point cp, Point p2);
-
-  Path& AddCubicComponent(Point p1, Point cp1, Point cp2, Point p2);
-
-  Path& AddContourComponent(Point destination, bool is_closed = false);
-
-  void SetContourClosed(bool is_closed);
+  bool IsConvex() const;
 
   template <class T>
   using Applier = std::function<void(size_t index, const T& component)>;
-  void EnumerateComponents(Applier<LinearPathComponent> linear_applier,
-                           Applier<QuadraticPathComponent> quad_applier,
-                           Applier<CubicPathComponent> cubic_applier,
-                           Applier<ContourComponent> contour_applier) const;
+  void EnumerateComponents(
+      const Applier<LinearPathComponent>& linear_applier,
+      const Applier<QuadraticPathComponent>& quad_applier,
+      const Applier<CubicPathComponent>& cubic_applier,
+      const Applier<ContourComponent>& contour_applier) const;
 
   bool GetLinearComponentAtIndex(size_t index,
                                  LinearPathComponent& linear) const;
@@ -105,6 +133,46 @@ class Path {
   bool GetContourComponentAtIndex(size_t index,
                                   ContourComponent& contour) const;
 
+  /// Callers must provide the scale factor for how this path will be
+  /// transformed.
+  ///
+  /// It is suitable to use the max basis length of the matrix used to transform
+  /// the path. If the provided scale is 0, curves will revert to lines.
+  Polyline CreatePolyline(Scalar scale) const;
+
+  std::optional<Rect> GetBoundingBox() const;
+
+  std::optional<Rect> GetTransformedBoundingBox(const Matrix& transform) const;
+
+  std::optional<std::pair<Point, Point>> GetMinMaxCoveragePoints() const;
+
+ private:
+  friend class PathBuilder;
+
+  void SetConvexity(Convexity value);
+
+  void SetFillType(FillType fill);
+
+  void SetBounds(Rect rect);
+
+  Path& AddLinearComponent(Point p1, Point p2);
+
+  Path& AddQuadraticComponent(Point p1, Point cp, Point p2);
+
+  Path& AddCubicComponent(Point p1, Point cp1, Point cp2, Point p2);
+
+  Path& AddContourComponent(Point destination, bool is_closed = false);
+
+  /// @brief Called by `PathBuilder` to compute the bounds for certain paths.
+  ///
+  /// `PathBuilder` may set the bounds directly, in case they come from a source
+  /// with already computed bounds, such as an SkPath.
+  void ComputeBounds();
+
+  void SetContourClosed(bool is_closed);
+
+  void Shift(Point shift);
+
   bool UpdateLinearComponentAtIndex(size_t index,
                                     const LinearPathComponent& linear);
 
@@ -116,16 +184,6 @@ class Path {
   bool UpdateContourComponentAtIndex(size_t index,
                                      const ContourComponent& contour);
 
-  Polyline CreatePolyline(
-      const SmoothingApproximation& approximation = {}) const;
-
-  std::optional<Rect> GetBoundingBox() const;
-
-  std::optional<Rect> GetTransformedBoundingBox(const Matrix& transform) const;
-
-  std::optional<std::pair<Point, Point>> GetMinMaxCoveragePoints() const;
-
- private:
   struct ComponentIndexPair {
     ComponentType type = ComponentType::kLinear;
     size_t index = 0;
@@ -137,11 +195,14 @@ class Path {
   };
 
   FillType fill_ = FillType::kNonZero;
+  Convexity convexity_ = Convexity::kUnknown;
   std::vector<ComponentIndexPair> components_;
   std::vector<LinearPathComponent> linears_;
   std::vector<QuadraticPathComponent> quads_;
   std::vector<CubicPathComponent> cubics_;
   std::vector<ContourComponent> contours_;
+
+  std::optional<Rect> computed_bounds_;
 };
 
 }  // namespace impeller

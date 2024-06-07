@@ -9,10 +9,8 @@ import 'package:test/test.dart';
 import 'package:ui/src/engine.dart';
 import 'package:ui/ui.dart' hide window;
 
+import '../../common/test_initialization.dart';
 import 'helper.dart';
-import 'text_scuba.dart';
-
-typedef CanvasTest = FutureOr<void> Function(EngineCanvas canvas);
 
 const Rect bounds = Rect.fromLTWH(0, 0, 800, 600);
 
@@ -21,7 +19,10 @@ void main() {
 }
 
 Future<void> testMain() async {
-  setUpStableTestFonts();
+  setUpUnitTests(
+    emulateTesterEnvironment: false,
+    setUpTestViewDimensions: false,
+  );
 
   test('draws paragraphs with placeholders', () {
     final BitmapCanvas canvas = BitmapCanvas(bounds, RenderStrategy());

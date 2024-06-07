@@ -5,39 +5,43 @@
 @JS()
 library js_loader;
 
-import 'package:js/js.dart';
+import 'dart:js_interop';
 
-import 'js_promise.dart';
+import 'package:js/js_util.dart' as js_util;
+import 'package:ui/src/engine.dart';
 
-/// Typedef for the function that notifies JS that the main entrypoint is up and running.
-/// As a parameter, a [FlutterEngineInitializer] instance is passed to JS, so the
-/// programmer can control the initialization sequence.
-typedef DidCreateEngineInitializerFn = void Function(FlutterEngineInitializer);
+@JS()
+@staticInterop
+class FlutterJS {}
 
-// A JS-interop representation of `_flutter?.loader?.didCreateEngineInitializer?`:
+extension FlutterJSExtension on FlutterJS {
+  external FlutterLoader? get loader;
+}
 
-@JS('_flutter.loader.didCreateEngineInitializer')
-external DidCreateEngineInitializerFn? get didCreateEngineInitializer;
+// Both `flutter`, `loader`(_flutter.loader), must be checked for null before
+// `didCreateEngineInitializer` can be safely accessed.
+@JS('_flutter')
+external FlutterJS? get flutter;
 
-// /// window._flutter
-// @JS('_flutter')
-// external FlutterJsNamespace? get flutterjs;
+@JS()
+@staticInterop
+class FlutterLoader {}
 
-// /// window._flutter.loader
-// @JS()
-// @anonymous
-// class FlutterJsNamespace {
-//   external FlutterJsLoaderNamespace? get loader;
-// }
+extension FlutterLoaderExtension on FlutterLoader {
+  external void didCreateEngineInitializer(FlutterEngineInitializer initializer);
+  bool get isAutoStart => !js_util.hasProperty(this, 'didCreateEngineInitializer');
+}
 
-// /// The bits of window._flutter.loader that the Flutter Engine cares about.
-// @JS()
-// @anonymous
-// class FlutterJsLoaderNamespace {
-//   /// A hook to notify JavaScript that Flutter is up and running!
-//   /// This is setup by flutter.js when the main entrypoint bundle is injected.
-//   external DidCreateEngineInitializerFn? get didCreateEngineInitializer;
-// }
+/// Typedef for the function that initializes the flutter engine.
+/// ///
+/// [JsFlutterConfiguration] comes from `../configuration.dart`. It is the same
+/// object that can be used to configure flutter "inline", through the
+/// (to be deprecated) `window.flutterConfiguration` object.
+typedef InitializeEngineFn = Future<FlutterAppRunner> Function([JsFlutterConfiguration?]);
+
+/// Typedef for the `autoStart` function that can be called straight from an engine initializer instance.
+/// (Similar to [RunAppFn], but taking no specific "runApp" parameters).
+typedef ImmediateRunAppFn = Future<FlutterApp> Function();
 
 // FlutterEngineInitializer
 
@@ -49,27 +53,18 @@ external DidCreateEngineInitializerFn? get didCreateEngineInitializer;
 @anonymous
 @staticInterop
 abstract class FlutterEngineInitializer{
-  external factory FlutterEngineInitializer({
+  factory FlutterEngineInitializer({
     required InitializeEngineFn initializeEngine,
     required ImmediateRunAppFn autoStart,
+  }) => FlutterEngineInitializer._(
+      initializeEngine: (([JsFlutterConfiguration? config]) => futureToPromise(initializeEngine(config))).toJS,
+      autoStart: (() => futureToPromise(autoStart())).toJS,
+    );
+  external factory FlutterEngineInitializer._({
+    required JSFunction initializeEngine,
+    required JSFunction autoStart,
   });
 }
-
-/// The shape of the object that can be passed as parameter to the
-/// initializeEngine function of the FlutterEngineInitializer object
-/// (when called from JS).
-@JS()
-@anonymous
-@staticInterop
-abstract class InitializeEngineFnParameters {
-}
-
-/// Typedef for the function that initializes the flutter engine.
-typedef InitializeEngineFn = Promise<FlutterAppRunner?> Function([InitializeEngineFnParameters?]);
-
-/// Typedef for the `autoStart` function that can be called straight from an engine initializer instance.
-/// (Similar to [RunAppFn], but taking no specific "runApp" parameters).
-typedef ImmediateRunAppFn = Promise<FlutterApp> Function();
 
 // FlutterAppRunner
 
@@ -78,10 +73,14 @@ typedef ImmediateRunAppFn = Promise<FlutterApp> Function();
 @JS()
 @anonymous
 @staticInterop
-abstract class FlutterAppRunner {
+abstract class FlutterAppRunner implements JSObject {
+  factory FlutterAppRunner({required RunAppFn runApp,}) => FlutterAppRunner._(
+    runApp: (([RunAppFnParameters? args]) => futureToPromise(runApp(args))).toJS
+  );
+
   /// Runs a flutter app
-  external factory FlutterAppRunner({
-    required RunAppFn runApp, // Returns an App
+  external factory FlutterAppRunner._({
+    required JSFunction runApp, // Returns an App
   });
 }
 
@@ -94,7 +93,7 @@ abstract class RunAppFnParameters {
 }
 
 /// Typedef for the function that runs the flutter app main entrypoint.
-typedef RunAppFn = Promise<FlutterApp> Function([RunAppFnParameters?]);
+typedef RunAppFn = Future<FlutterApp> Function([RunAppFnParameters?]);
 
 // FlutterApp
 
@@ -102,7 +101,7 @@ typedef RunAppFn = Promise<FlutterApp> Function([RunAppFnParameters?]);
 @JS()
 @anonymous
 @staticInterop
-abstract class FlutterApp {
+abstract class FlutterApp implements JSObject {
   /// Cleans a Flutter app
   external factory FlutterApp();
 }

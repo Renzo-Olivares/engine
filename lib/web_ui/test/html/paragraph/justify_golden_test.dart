@@ -9,15 +9,18 @@ import 'package:test/test.dart';
 import 'package:ui/src/engine.dart';
 import 'package:ui/ui.dart' hide window;
 
+import '../../common/test_initialization.dart';
 import 'helper.dart';
-import 'text_scuba.dart';
 
 void main() {
   internalBootstrapBrowserTest(() => testMain);
 }
 
 Future<void> testMain() async {
-  setUpStableTestFonts();
+  setUpUnitTests(
+    emulateTesterEnvironment: false,
+    setUpTestViewDimensions: false,
+  );
 
   void testJustifyWithMultipleSpans(EngineCanvas canvas) {
     void build(CanvasParagraphBuilder builder) {

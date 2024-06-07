@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <utility>
 #include <variant>
 
 namespace flutter {
@@ -28,7 +29,7 @@ class PixelBufferTexture {
   // take care of proper synchronization. It also needs to be ensured that the
   // returned buffer isn't released prior to unregistering this texture.
   explicit PixelBufferTexture(CopyBufferCallback copy_buffer_callback)
-      : copy_buffer_callback_(copy_buffer_callback) {}
+      : copy_buffer_callback_(std::move(copy_buffer_callback)) {}
 
   // Returns the callback-provided FlutterDesktopPixelBuffer that contains the
   // actual pixel data. The intended surface size is specified by |width| and
@@ -95,8 +96,13 @@ class TextureRegistrar {
   // the callback that was provided upon creating the texture.
   virtual bool MarkTextureFrameAvailable(int64_t texture_id) = 0;
 
-  // Unregisters an existing Texture object.
-  // Textures must not be unregistered while they're in use.
+  // Asynchronously unregisters an existing texture object.
+  // Upon completion, the optional |callback| gets invoked.
+  virtual void UnregisterTexture(int64_t texture_id,
+                                 std::function<void()> callback) = 0;
+
+  // Unregisters an existing texture object.
+  // DEPRECATED: Use UnregisterTexture(texture_id, optional_callback) instead.
   virtual bool UnregisterTexture(int64_t texture_id) = 0;
 };
 

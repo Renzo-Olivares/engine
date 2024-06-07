@@ -18,6 +18,9 @@ source_set("fml") {
     "compiler_specific.h",
     "concurrent_message_loop.cc",
     "concurrent_message_loop.h",
+    "container.h",
+    "cpu_affinity.cc",
+    "cpu_affinity.h",
     "delayed_task.cc",
     "delayed_task.h",
     "eintr_wrapper.h",
@@ -46,6 +49,7 @@ source_set("fml") {
     "memory/ref_ptr_internal.h",
     "memory/task_runner_checker.cc",
     "memory/task_runner_checker.h",
+    "memory/thread_checker.cc",
     "memory/thread_checker.h",
     "memory/weak_ptr.h",
     "memory/weak_ptr_internal.cc",
@@ -96,7 +100,7 @@ source_set("fml") {
     "wakeable.h",
   ]
 
-  if (is_mac || is_linux || (is_ios && is_debug)) {
+  if (enable_backtrace) {
     sources += [ "backtrace.cc" ]
   } else {
     sources += [ "backtrace_stub.cc" ]
@@ -115,7 +119,7 @@ source_set("fml") {
     "//third_party/icu",
   ]
 
-  if (is_mac || is_linux || (is_ios && is_debug)) {
+  if (enable_backtrace) {
     # This abseil dependency is only used by backtrace.cc.
     deps += [ "//third_party/abseil-cpp/absl/debugging:symbolize" ]
   }
@@ -130,9 +134,15 @@ source_set("fml") {
   libs = []
 
   if (is_ios || is_mac) {
-    sources += [ "platform/posix/shared_mutex_posix.cc" ]
+    sources += [
+      "platform/darwin/concurrent_message_loop_factory.mm",
+      "platform/posix/shared_mutex_posix.cc",
+    ]
   } else {
-    sources += [ "synchronization/shared_mutex_std.cc" ]
+    sources += [
+      "concurrent_message_loop_factory.cc",
+      "synchronization/shared_mutex_std.cc",
+    ]
   }
 
   if (is_ios || is_mac) {
@@ -149,6 +159,8 @@ source_set("fml") {
       "platform/darwin/platform_version.mm",
       "platform/darwin/scoped_block.h",
       "platform/darwin/scoped_block.mm",
+      "platform/darwin/scoped_nsautorelease_pool.cc",
+      "platform/darwin/scoped_nsautorelease_pool.h",
       "platform/darwin/scoped_nsobject.h",
       "platform/darwin/scoped_nsobject.mm",
       "platform/darwin/string_range_sanitization.h",
@@ -160,6 +172,8 @@ source_set("fml") {
 
   if (is_android) {
     sources += [
+      "platform/android/cpu_affinity.cc",
+      "platform/android/cpu_affinity.h",
       "platform/android/jni_util.cc",
       "platform/android/jni_util.h",
       "platform/android/jni_weak_ref.cc",
@@ -214,6 +228,7 @@ source_set("fml") {
 
   if (is_win) {
     sources += [
+      "platform/win/command_line_win.cc",
       "platform/win/errors_win.cc",
       "platform/win/errors_win.h",
       "platform/win/file_win.cc",
@@ -226,6 +241,7 @@ source_set("fml") {
     ]
   } else {
     sources += [
+      "platform/posix/command_line_posix.cc",
       "platform/posix/file_posix.cc",
       "platform/posix/mapping_posix.cc",
       "platform/posix/native_library_posix.cc",
@@ -262,6 +278,10 @@ source_set("string_conversion") {
     "string_conversion.h",
   ]
 
+  # Current versions of libcxx have deprecated some of the UTF-16 string
+  # conversion APIs.
+  defines = [ "_LIBCPP_DISABLE_DEPRECATION_WARNINGS" ]
+
   if (is_win) {
     sources += [
       "platform/win/wstring_conversion.cc",
@@ -269,7 +289,7 @@ source_set("string_conversion") {
     ]
 
     # TODO(cbracken): https://github.com/flutter/flutter/issues/50053
-    defines = [ "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" ]
+    defines += [ "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" ]
   }
 
   deps = [ ":build_config" ]
@@ -303,7 +323,10 @@ if (enable_unittests) {
       "ascii_trie_unittests.cc",
       "backtrace_unittests.cc",
       "base32_unittest.cc",
+      "closure_unittests.cc",
       "command_line_unittest.cc",
+      "container_unittests.cc",
+      "cpu_affinity_unittests.cc",
       "endianness_unittests.cc",
       "file_unittest.cc",
       "hash_combine_unittests.cc",
@@ -343,7 +366,10 @@ if (enable_unittests) {
     }
 
     if (is_win) {
-      sources += [ "platform/win/wstring_conversion_unittests.cc" ]
+      sources += [
+        "platform/win/file_win_unittests.cc",
+        "platform/win/wstring_conversion_unittests.cc",
+      ]
     }
 
     deps = [
