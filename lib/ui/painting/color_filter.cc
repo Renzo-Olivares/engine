@@ -14,34 +14,17 @@
 
 namespace flutter {
 
-static void ColorFilter_constructor(Dart_NativeArguments args) {
-  UIDartState::ThrowIfUIOperationsProhibited();
-  DartCallConstructor(&ColorFilter::Create, args);
-}
-
 IMPLEMENT_WRAPPERTYPEINFO(ui, ColorFilter);
 
-#define FOR_EACH_BINDING(V)             \
-  V(ColorFilter, initMode)              \
-  V(ColorFilter, initMatrix)            \
-  V(ColorFilter, initSrgbToLinearGamma) \
-  V(ColorFilter, initLinearToSrgbGamma)
-
-FOR_EACH_BINDING(DART_NATIVE_CALLBACK)
-
-void ColorFilter::RegisterNatives(tonic::DartLibraryNatives* natives) {
-  natives->Register(
-      {{"ColorFilter_constructor", ColorFilter_constructor, 1, true},
-       FOR_EACH_BINDING(DART_REGISTER_NATIVE)});
-}
-
-fml::RefPtr<ColorFilter> ColorFilter::Create() {
-  return fml::MakeRefCounted<ColorFilter>();
+void ColorFilter::Create(Dart_Handle wrapper) {
+  UIDartState::ThrowIfUIOperationsProhibited();
+  auto res = fml::MakeRefCounted<ColorFilter>();
+  res->AssociateWithDartWrapper(wrapper);
 }
 
 void ColorFilter::initMode(int color, int blend_mode) {
-  filter_ = std::make_shared<DlBlendColorFilter>(
-      static_cast<DlColor>(color), static_cast<DlBlendMode>(blend_mode));
+  filter_ = DlBlendColorFilter::Make(static_cast<DlColor>(color),
+                                     static_cast<DlBlendMode>(blend_mode));
 }
 
 void ColorFilter::initMatrix(const tonic::Float32List& color_matrix) {
@@ -56,15 +39,15 @@ void ColorFilter::initMatrix(const tonic::Float32List& color_matrix) {
   matrix[9] *= 1.0f / 255;
   matrix[14] *= 1.0f / 255;
   matrix[19] *= 1.0f / 255;
-  filter_ = std::make_shared<DlMatrixColorFilter>(matrix);
+  filter_ = DlMatrixColorFilter::Make(matrix);
 }
 
 void ColorFilter::initLinearToSrgbGamma() {
-  filter_ = DlLinearToSrgbGammaColorFilter::instance;
+  filter_ = DlLinearToSrgbGammaColorFilter::kInstance;
 }
 
 void ColorFilter::initSrgbToLinearGamma() {
-  filter_ = DlSrgbToLinearGammaColorFilter::instance;
+  filter_ = DlSrgbToLinearGammaColorFilter::kInstance;
 }
 
 ColorFilter::~ColorFilter() = default;

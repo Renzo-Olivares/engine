@@ -28,20 +28,16 @@ Future<void> testMain() async {
   });
 
   test('draws arcs with largeArc , anticlockwise variations', () async {
-    paintArc(canvas, const Offset(0, 0),
-        largeArc: false, clockwise: false, distance: 20);
+    paintArc(canvas, Offset.zero, distance: 20);
     paintArc(canvas, const Offset(200, 0),
-        largeArc: true, clockwise: false, distance: 20);
-    paintArc(canvas, const Offset(0, 150),
-        largeArc: false, clockwise: true, distance: 20);
+        largeArc: true, distance: 20);
+    paintArc(canvas, const Offset(0, 150), clockwise: true, distance: 20);
     paintArc(canvas, const Offset(200, 150),
         largeArc: true, clockwise: true, distance: 20);
-    paintArc(canvas, const Offset(0, 300),
-        largeArc: false, clockwise: false, distance: -20);
+    paintArc(canvas, const Offset(0, 300), distance: -20);
     paintArc(canvas, const Offset(200, 300),
-        largeArc: true, clockwise: false, distance: -20);
-    paintArc(canvas, const Offset(0, 400),
-        largeArc: false, clockwise: true, distance: -20);
+        largeArc: true, distance: -20);
+    paintArc(canvas, const Offset(0, 400), clockwise: true, distance: -20);
     paintArc(canvas, const Offset(200, 400),
         largeArc: true, clockwise: true, distance: -20);
 
@@ -58,7 +54,7 @@ Future<void> testMain() async {
       ..addArc(Rect.fromCircle(center: rect.center,
           radius: rect.size.shortestSide / 2), 0.25 * math.pi, 1.5 * math.pi);
     canvas.drawPath(p, SurfacePaintData()
-      ..color = const Color(0xFFFF9800) // orange
+      ..color = 0xFFFF9800 // orange
       ..style = PaintingStyle.fill);
 
     domDocument.body!.append(canvas.rootElement);
@@ -76,7 +72,7 @@ Future<void> testMain() async {
         4.71238898038469 - 5.759586531581287, true);
     path.lineTo(149.999999999999997, 20);
     canvas.drawPath(path, SurfacePaintData()
-      ..color = const Color(0xFFFF9800) // orange
+      ..color = 0xFFFF9800 // orange
       ..style = PaintingStyle.fill);
 
     domDocument.body!.append(canvas.rootElement);
@@ -95,7 +91,7 @@ void paintArc(BitmapCanvas canvas, Offset offset,
       Rect.fromLTRB(startP.dx, startP.dy, endP.dx, endP.dy),
       SurfacePaintData()
         ..strokeWidth = 1
-        ..color = const Color(0xFFFF9800) // orange
+        ..color = 0xFFFF9800 // orange
         ..style = PaintingStyle.stroke);
   final Path path = Path();
   path.moveTo(startP.dx, startP.dy);
@@ -108,6 +104,6 @@ void paintArc(BitmapCanvas canvas, Offset offset,
       path,
       SurfacePaintData()
         ..strokeWidth = 2
-        ..color = const Color(0x61000000) // black38
+        ..color = 0x61000000 // black38
         ..style = PaintingStyle.stroke);
 }

@@ -16,8 +16,11 @@ class FilterContentsFilterInput final : public FilterInput {
   Variant GetInput() const override;
 
   // |FilterInput|
-  std::optional<Snapshot> GetSnapshot(const ContentContext& renderer,
-                                      const Entity& entity) const override;
+  std::optional<Snapshot> GetSnapshot(
+      const std::string& label,
+      const ContentContext& renderer,
+      const Entity& entity,
+      std::optional<Rect> coverage_limit) const override;
 
   // |FilterInput|
   std::optional<Rect> GetCoverage(const Entity& entity) const override;
@@ -28,8 +31,28 @@ class FilterContentsFilterInput final : public FilterInput {
   // |FilterInput|
   Matrix GetTransform(const Entity& entity) const override;
 
+  // |FilterInput|
+  void PopulateGlyphAtlas(
+      const std::shared_ptr<LazyGlyphAtlas>& lazy_glyph_atlas,
+      Scalar scale) override;
+
+  // |FilterInput|
+  bool IsTranslationOnly() const override;
+
+  // |FilterInput|
+  bool IsLeaf() const override;
+
+  // |FilterInput|
+  void SetLeafInputs(const FilterInput::Vector& inputs) override;
+
+  // |FilterInput|
+  virtual void SetEffectTransform(const Matrix& matrix) override;
+
+  // |FilterInput|
+  virtual void SetRenderingMode(Entity::RenderingMode rendering_mode) override;
+
  private:
-  FilterContentsFilterInput(std::shared_ptr<FilterContents> filter);
+  explicit FilterContentsFilterInput(std::shared_ptr<FilterContents> filter);
 
   std::shared_ptr<FilterContents> filter_;
   mutable std::optional<Snapshot> snapshot_;
